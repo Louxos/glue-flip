@@ -1,0 +1,935 @@
+# GLUE FLIP — PROMPT DE DÉVELOPPEMENT COMPLET
+
+## 0. RÈGLE PRINCIPALE
+
+Tu dois développer **Glue Flip**, un jeu 3D ultra-réaliste jouable directement dans un navigateur.
+
+Il ne s'agit PAS d'une simple démo, d'un prototype rapide ou d'une page web avec quelques animations.
+
+Je veux une **véritable expérience de jeu 3D premium**, avec une physique crédible, une excellente sensation de contrôle, des environnements détaillés, une interface haut de gamme et une expérience suffisamment soignée pour être publiée publiquement.
+
+### IMPORTANT
+
+* Tu n'as **aucune limite de taille de projet**.
+* Tu n'as **aucune limite de temps de développement**.
+* Ne simplifie jamais une fonctionnalité uniquement parce qu'elle est longue à implémenter.
+* Ne remplace pas une vraie fonctionnalité par une simulation visuelle basique si une solution plus réaliste est possible.
+* Tu peux créer autant de fichiers, composants, systèmes, shaders, assets procéduraux, scripts et configurations que nécessaire.
+* Privilégie toujours la qualité finale, le réalisme, la stabilité et l'expérience utilisateur.
+* Tu dois réellement tester le projet.
+* Tu dois corriger les erreurs rencontrées pendant le développement.
+* Ne considère PAS le projet terminé simplement parce que le code compile.
+* Le résultat final doit être jouable.
+
+---
+
+# 1. CONCEPT
+
+Le concept est extrêmement simple :
+
+Le joueur possède un **bâton de colle réaliste** posé sur un bureau.
+
+Il doit le lancer de manière à ce qu'il effectue une rotation dans les airs puis **retombe parfaitement droit sur sa base**.
+
+Le principe ressemble à un bottle flip, mais avec un bâton de colle et une physique beaucoup plus réaliste.
+
+La difficulté vient de :
+
+* la puissance du lancer
+* la direction
+* l'angle
+* la rotation
+* le centre de masse
+* la gravité
+* les collisions
+* les rebonds
+* la friction
+* la surface
+* les petites variations naturelles de la physique
+
+Le gameplay doit être extrêmement simple à comprendre mais difficile à maîtriser.
+
+---
+
+# 2. OBJECTIF DE QUALITÉ
+
+Le résultat doit donner l'impression d'un **petit jeu indépendant premium**, et non d'un projet scolaire.
+
+Priorités absolues :
+
+1. Sensation de physique
+2. Réalisme visuel
+3. Qualité des animations
+4. Sensation des contrôles
+5. Sound design
+6. Immersion
+7. Performance
+8. Interface
+9. Contenu
+10. Architecture technique
+
+Ne surcharge pas le jeu de fonctionnalités inutiles.
+
+Le réalisme et la sensation de jeu sont plus importants que la quantité de menus.
+
+---
+
+# 3. TECHNOLOGIE
+
+Choisis une stack moderne adaptée à une véritable expérience 3D navigateur.
+
+Tu peux utiliser notamment :
+
+* moteur 3D adapté au navigateur
+* moteur physique 3D
+* TypeScript ou JavaScript moderne
+* système de build moderne
+* shaders lorsque nécessaire
+* WebGL/WebGPU si pertinent
+* Web Audio API ou solution audio adaptée
+
+Tu n'es PAS obligé d'utiliser une technologie précise si une autre solution est techniquement meilleure.
+
+En revanche :
+
+### INTERDICTION
+
+Ne construis pas tout dans un seul fichier HTML.
+
+Je veux une véritable architecture de projet.
+
+Organise correctement :
+
+* source
+* composants
+* systèmes
+* physique
+* gameplay
+* rendu
+* audio
+* UI
+* assets
+* données
+* configuration
+* utilitaires
+
+Le projet doit rester maintenable.
+
+---
+
+# 4. SERVEUR DE DÉVELOPPEMENT
+
+Une fois l'environnement installé et configuré :
+
+### LANCE LE SERVEUR DE DÉVELOPPEMENT DIRECTEMENT DANS LE WORKSPACE.
+
+Ne te contente pas de donner la commande.
+
+Exécute-la réellement si ton environnement le permet.
+
+Vérifie ensuite que :
+
+* le serveur démarre
+* l'application se charge
+* le moteur 3D fonctionne
+* aucune erreur critique n'apparaît
+* le jeu est réellement interactif
+
+Si le premier lancement échoue :
+
+1. analyse l'erreur
+2. corrige le problème
+3. relance
+4. reteste
+
+Continue jusqu'à obtenir une version fonctionnelle.
+
+---
+
+# 5. ENVIRONNEMENT PRINCIPAL
+
+L'environnement principal est un **bureau réaliste**.
+
+Je veux une scène crédible avec :
+
+* bureau
+* surface avec texture réaliste
+* variations de matériaux
+* petites imperfections
+* ombres
+* lumière naturelle
+* objets secondaires
+* profondeur
+* occlusion
+* reflets lorsque pertinents
+* éclairage cohérent
+
+Le décor ne doit cependant jamais distraire du gameplay.
+
+Le bâton de colle doit rester l'objet visuellement important.
+
+---
+
+# 6. BÂTON DE COLLE
+
+Créer un bâton de colle 3D détaillé.
+
+Il doit avoir :
+
+* corps cylindrique
+* plastique réaliste
+* bouchon
+* mécanisme inférieur
+* étiquette
+* petites imperfections
+* matériaux différents
+* détails de surface
+* réflexion réaliste
+* roughness adaptée
+* ombres crédibles
+
+Le modèle doit avoir une apparence de **vrai bâton de colle scolaire**, pas un cylindre générique.
+
+Créer plusieurs variantes lorsque cela apporte réellement quelque chose au jeu.
+
+Les variantes peuvent avoir :
+
+* forme légèrement différente
+* poids différent
+* centre de masse différent
+* taille différente
+* matériaux différents
+* apparence différente
+
+Mais ne rends pas le jeu injuste.
+
+---
+
+# 7. PHYSIQUE
+
+C'est la partie la PLUS IMPORTANTE du projet.
+
+Le bâton doit être un véritable objet physique.
+
+Prendre en compte :
+
+* masse
+* gravité
+* centre de masse
+* inertie
+* rotation
+* vitesse angulaire
+* vitesse linéaire
+* friction
+* restitution
+* collisions
+* rebonds
+* frottement avec la surface
+* stabilité lorsqu'il tombe
+* orientation finale
+
+Le comportement doit être cohérent.
+
+Un lancer identique doit donner globalement le même résultat, mais de petites variations naturelles peuvent être introduites afin d'éviter une sensation totalement mécanique.
+
+Les variations doivent rester contrôlées et crédibles.
+
+---
+
+# 8. SYSTÈME DE LANCER
+
+Le système de lancer doit être aussi naturel que possible.
+
+## Ordinateur
+
+Le joueur peut attraper le bâton avec la souris.
+
+Il peut ensuite effectuer un mouvement pour déterminer :
+
+* direction
+* puissance
+* angle
+* impulsion
+* rotation
+
+Le système doit analyser le mouvement du curseur plutôt que simplement utiliser un bouton « lancer ».
+
+Le joueur doit avoir la sensation de réellement **prendre et jeter l'objet**.
+
+Afficher éventuellement un feedback discret pendant la préparation :
+
+* trajectoire approximative
+* puissance
+* direction
+* rotation
+
+Mais ne jamais transformer l'expérience en interface remplie de chiffres.
+
+---
+
+# 9. MOBILE
+
+Le jeu doit être réellement adapté aux écrans tactiles.
+
+Ne fais PAS simplement grossir l'interface desktop.
+
+Créer un véritable système tactile :
+
+* drag
+* swipe
+* pression
+* relâchement
+* gestes naturels
+* feedback tactile si disponible
+
+Le contrôle mobile doit conserver le même principe physique que sur PC.
+
+Le joueur doit pouvoir lancer le bâton avec un geste naturel.
+
+Adapter également :
+
+* caméra
+* boutons
+* HUD
+* menus
+* taille des éléments interactifs
+* performances
+* qualité graphique
+
+---
+
+# 10. CAMÉRA
+
+Créer un système de caméra hybride.
+
+Pendant la préparation :
+
+* caméra contrôlable
+* liberté raisonnable
+* possibilité d'observer le bureau
+* contrôle souris/tactile
+
+Pendant le lancer :
+
+La caméra doit intelligemment suivre le bâton.
+
+Elle peut :
+
+* effectuer un léger zoom
+* suivre la trajectoire
+* ajuster son orientation
+* conserver le bâton dans une zone agréable de l'écran
+
+Mais elle ne doit jamais donner une sensation de caméra automatique incontrôlable.
+
+Le joueur doit toujours avoir l'impression de maîtriser la scène.
+
+---
+
+# 11. CAMÉRA CINÉMATIQUE
+
+Lorsqu'un lancer approche du sol :
+
+Créer une petite mise en scène dynamique.
+
+Par exemple :
+
+* ralentissement très léger
+* zoom subtil
+* caméra qui accompagne la chute
+* accentuation du son
+* animation de suspense
+
+Si le bâton réussit :
+
+* courte caméra de confirmation
+* impact satisfaisant
+* petit mouvement naturel
+* retour rapide au gameplay
+
+Si le bâton échoue :
+
+* conserver la physique réelle
+* ne pas forcer une animation prédéfinie
+
+Le système doit rester fluide et non artificiel.
+
+---
+
+# 12. RÉSULTAT DU LANCER
+
+Créer plusieurs niveaux de résultat.
+
+### PERFECT LANDING
+
+Le bâton arrive pratiquement parfaitement vertical.
+
+### LANDING
+
+Le bâton reste debout mais avec une légère inclinaison.
+
+### FAILED
+
+Le bâton tombe, rebondit ou finit dans une position invalide.
+
+La précision doit être calculée réellement à partir de l'orientation finale.
+
+Ne déclenche pas un succès simplement parce qu'une animation est terminée.
+
+---
+
+# 13. GAMEPLAY MODES
+
+Créer trois modes principaux.
+
+## CLASSIC
+
+Mode principal.
+
+Objectif :
+
+Faire le plus grand nombre de réussites consécutives.
+
+Système :
+
+* score
+* combo
+* meilleure série
+* précision
+* progression de difficulté
+
+La difficulté augmente progressivement.
+
+---
+
+## CHALLENGES
+
+Créer des défis spécifiques.
+
+Exemples :
+
+* distance imposée
+* surface plus petite
+* angle particulier
+* obstacle
+* bureau différent
+* surface différente
+* zone d'atterrissage
+* nombre de tentatives limité
+* conditions particulières
+
+Les challenges doivent être conçus pour exploiter la physique du jeu.
+
+---
+
+## OPEN MODE
+
+Mode libre.
+
+Aucun score.
+
+Aucune pression.
+
+Aucune obligation de réussir.
+
+Le joueur peut simplement :
+
+* lancer la colle
+* tester la physique
+* changer de surface
+* expérimenter
+* regarder les rebonds
+* recommencer autant qu'il veut
+
+Ce mode doit être particulièrement agréable pour expérimenter.
+
+---
+
+# 14. PROGRESSION
+
+Dans Classic, la difficulté doit augmenter progressivement.
+
+Exemples possibles :
+
+* distance plus importante
+* surface différente
+* surface plus petite
+* obstacles
+* environnement différent
+* hauteur différente
+* angle de lancement différent
+
+La progression doit rester naturelle.
+
+Ne rends pas soudainement le jeu impossible.
+
+---
+
+# 15. SCORE
+
+Créer un système de score simple mais satisfaisant.
+
+Prendre en compte :
+
+* réussite
+* précision
+* difficulté
+* combo
+* perfect landing
+
+Exemple logique :
+
+Plus la landing est parfaite et plus la situation est difficile, plus le score est élevé.
+
+Créer également :
+
+* score actuel
+* meilleur score
+* combo actuel
+* meilleur combo
+
+---
+
+# 16. FEEDBACK VISUEL
+
+Lors d'un perfect landing :
+
+Créer un feedback premium et discret.
+
+Exemples :
+
+* texte élégant
+* légère animation
+* petit effet de particules
+* caméra
+* son
+* vibration mobile si disponible
+
+Éviter les effets arcade excessifs.
+
+Le jeu doit rester réaliste.
+
+---
+
+# 17. AUDIO
+
+Le sound design doit renforcer énormément le réalisme.
+
+Créer ou intégrer des sons adaptés pour :
+
+* manipulation de la colle
+* lancer
+* rotation
+* déplacement dans l'air
+* impact
+* rebond
+* glissement
+* landing
+* perfect landing
+* interface
+
+Les sons doivent varier légèrement selon :
+
+* vitesse
+* puissance
+* type de collision
+* surface
+
+Ajouter une ambiance très légère de pièce/bureau si pertinent.
+
+---
+
+# 18. INTERFACE
+
+L'interface doit être **premium, minimaliste et presque invisible pendant le gameplay**.
+
+Pas de gros boutons colorés partout.
+
+Pendant le gameplay, afficher seulement ce qui est nécessaire :
+
+* score
+* combo
+* éventuellement objectif
+* bouton pause/menu
+
+Utiliser :
+
+* typographie élégante
+* animations fluides
+* transparences
+* profondeur
+* micro-interactions
+* transitions
+
+---
+
+# 19. MENU PRINCIPAL
+
+Créer un menu principal premium.
+
+La scène 3D du bureau peut être visible en arrière-plan.
+
+Le menu doit ressembler à une véritable expérience de jeu.
+
+Structure possible :
+
+GLUE FLIP
+
+*Master the perfect landing.*
+
+PLAY
+
+CHALLENGES
+
+OPEN MODE
+
+SETTINGS
+
+Le décor derrière le menu doit être animé subtilement.
+
+Par exemple :
+
+* lumière naturelle
+* poussière très légère
+* mouvement de caméra
+* colle posée sur le bureau
+
+---
+
+# 20. SETTINGS
+
+Créer un vrai menu de paramètres.
+
+Inclure notamment :
+
+* volume général
+* volume effets
+* volume ambiance
+* qualité graphique
+* sensibilité caméra
+* sensibilité lancer
+* mode performance
+* paramètres tactiles si nécessaire
+
+Sauvegarder les préférences localement.
+
+---
+
+# 21. DESIGN VISUEL
+
+Le style doit être :
+
+**PHOTORÉALISTE + PREMIUM + MINIMALISTE**
+
+Éviter absolument :
+
+* design cartoon
+* néons inutiles
+* esthétique cyberpunk
+* interface gaming générique
+* gros gradients
+* effets flashy
+* surcharge visuelle
+
+Le jeu doit pouvoir ressembler à une petite expérience 3D réaliste publiée sur une plateforme professionnelle.
+
+---
+
+# 22. ANIMATIONS
+
+Tout doit être fluide.
+
+Créer des transitions pour :
+
+* menus
+* boutons
+* score
+* combo
+* caméra
+* changement de mode
+* lancement
+* landing
+
+Les animations doivent être courtes et naturelles.
+
+---
+
+# 23. PERFORMANCE
+
+Le projet doit être optimisé pour :
+
+### Desktop
+
+PC modernes avec navigateur récent.
+
+### Mobile
+
+Téléphones modernes avec navigateur compatible WebGL/WebGPU.
+
+Prévoir :
+
+* niveau de qualité graphique
+* résolution dynamique si nécessaire
+* limitation des effets lourds
+* optimisation des meshes
+* optimisation des textures
+* gestion intelligente des lumières
+* limitation des objets inutiles
+* chargement progressif si pertinent
+
+Le réalisme ne doit pas sacrifier inutilement les performances.
+
+---
+
+# 24. RESPONSIVE
+
+Le jeu doit fonctionner correctement sur :
+
+* grands écrans
+* ordinateurs portables
+* tablettes
+* smartphones portrait
+* smartphones paysage
+
+Adapter réellement l'interface et la caméra.
+
+---
+
+# 25. SAUVEGARDE
+
+Utiliser une solution locale appropriée pour conserver :
+
+* meilleur score
+* meilleur combo
+* progression
+* paramètres
+* challenges terminés
+* préférences
+
+Ne demande pas de compte utilisateur pour jouer.
+
+---
+
+# 26. ACCESSIBILITÉ
+
+Prévoir au minimum :
+
+* contraste correct
+* tailles de texte lisibles
+* contrôles compréhensibles
+* possibilité de désactiver certains effets
+* volume indépendant
+* réduction des mouvements de caméra si pertinent
+
+---
+
+# 27. ARCHITECTURE
+
+Créer une architecture propre.
+
+Séparer clairement :
+
+* moteur/rendu
+* physique
+* gameplay
+* input
+* caméra
+* audio
+* UI
+* progression
+* sauvegarde
+* données
+* assets
+* configuration
+
+Ne crée pas de gigantesques fichiers impossibles à maintenir.
+
+Utilise des composants et systèmes réutilisables.
+
+---
+
+# 28. QUALITÉ DU CODE
+
+Le code doit être :
+
+* propre
+* lisible
+* modulaire
+* documenté lorsque nécessaire
+* robuste
+* maintenable
+* performant
+
+Évite les hacks inutiles.
+
+Évite les valeurs magiques lorsqu'elles peuvent être regroupées dans une configuration.
+
+Prévoir une configuration centralisée pour les paramètres physiques importants.
+
+---
+
+# 29. TESTS
+
+Tu dois tester réellement :
+
+### Gameplay
+
+* lancer
+* rotation
+* collision
+* rebond
+* landing
+* perfect landing
+* échec
+* score
+* combo
+
+### Interface
+
+* menu
+* pause
+* settings
+* changements de mode
+
+### Mobile
+
+* tactile
+* orientation
+* responsive
+* performances
+
+### Physique
+
+Tester plusieurs puissances, angles et rotations.
+
+Vérifier qu'il n'existe pas de comportement absurde :
+
+* objet qui traverse le sol
+* objet qui vole sans raison
+* rotation impossible
+* collision catastrophique
+* caméra qui perd le joueur
+* objet qui reste bloqué
+
+---
+
+# 30. DEBUG
+
+Pendant le développement, créer si nécessaire des outils de debug permettant de visualiser :
+
+* collider
+* centre de masse
+* vitesse
+* vitesse angulaire
+* trajectoire
+* orientation
+* raycasts
+
+Ces outils peuvent être désactivés en production.
+
+---
+
+# 31. ERREURS
+
+Après chaque grande étape :
+
+1. lancer l'application
+2. observer les erreurs
+3. corriger
+4. relancer
+5. tester
+
+Ne laisse pas volontairement des erreurs console importantes.
+
+Si une fonctionnalité est techniquement impossible dans l'environnement choisi, trouve la meilleure alternative réaliste au lieu de supprimer la fonctionnalité sans raison.
+
+---
+
+# 32. FINALISATION
+
+Avant de considérer le projet terminé :
+
+### Vérifie :
+
+* [ ] Le jeu démarre correctement
+* [ ] Le serveur fonctionne
+* [ ] La scène 3D fonctionne
+* [ ] Le bâton est correctement rendu
+* [ ] La physique fonctionne
+* [ ] Le lancer fonctionne à la souris
+* [ ] Le lancer fonctionne au tactile
+* [ ] La caméra fonctionne
+* [ ] Le suivi automatique fonctionne
+* [ ] Les ralentissements cinématiques fonctionnent
+* [ ] Les landings sont correctement détectées
+* [ ] Le score fonctionne
+* [ ] Les combos fonctionnent
+* [ ] Classic fonctionne
+* [ ] Challenges fonctionne
+* [ ] Open Mode fonctionne
+* [ ] Les paramètres fonctionnent
+* [ ] Les sauvegardes fonctionnent
+* [ ] Le responsive fonctionne
+* [ ] Le jeu est suffisamment performant
+* [ ] Il n'y a pas d'erreur critique
+* [ ] L'expérience visuelle est cohérente
+* [ ] L'expérience audio est cohérente
+
+---
+
+# 33. IMPORTANT : NE PAS S'ARRÊTER TROP TÔT
+
+Tu disposes de **tout le temps et de toute la taille de projet nécessaires**.
+
+Si tu constates qu'une partie pourrait être meilleure :
+
+**améliore-la.**
+
+Si la physique semble artificielle :
+
+**travaille-la davantage.**
+
+Si le modèle semble trop basique :
+
+**améliore-le.**
+
+Si l'interface semble générique :
+
+**refais-la.**
+
+Si la caméra n'est pas satisfaisante :
+
+**corrige-la.**
+
+Si le jeu fonctionne mais ne semble pas premium :
+
+**continue à travailler dessus.**
+
+Le but n'est pas de produire rapidement une version « correcte ».
+
+Le but est d'obtenir la meilleure version réaliste possible de **Glue Flip** dans les contraintes techniques du navigateur.
+
+---
+
+# 34. LIVRABLE FINAL
+
+À la fin :
+
+1. Le projet doit être entièrement présent dans le workspace.
+2. Le serveur de développement doit être lancé.
+3. Le jeu doit être accessible et jouable.
+4. Les erreurs critiques doivent être corrigées.
+5. Le code doit être propre et organisé.
+6. Le projet doit être prêt à être publié.
+7. Fournis un README professionnel expliquant le projet, son installation et son lancement.
+8. N'indique pas que le projet est terminé tant que tu n'as pas réellement vérifié son fonctionnement.
+
+## OBJECTIF FINAL
+
+Créer une expérience où le joueur prend réellement plaisir à essayer encore et encore :
+
+**prendre la colle → lancer → regarder la rotation → attendre l'impact → voir si elle reste parfaitement droite.**
+
+La simplicité du concept doit être compensée par une **qualité exceptionnelle de physique, de rendu, de caméra, d'audio et de sensation**.
+
+**GLUE FLIP doit être simple à comprendre, mais extrêmement satisfaisant à maîtriser.**
