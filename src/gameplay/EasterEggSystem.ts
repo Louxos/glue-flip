@@ -31,6 +31,23 @@ export type EggEvent =
   /** Wall-clock check, fed on boot and when the menu opens. */
   | { type: 'hour'; hour: number };
 
+/**
+ * What one event produced.
+ *
+ * The two lists answer different questions, and conflating them was a real bug:
+ * an egg that was already known used to return nothing at all, so its *effect*
+ * stopped happening — low gravity could be switched on but never off, and the
+ * patience glow never came back in a later session.
+ */
+export interface EggTrigger {
+  /** Every egg whose condition this event satisfied. Effects re-apply. */
+  fired: string[];
+  /** The subset seen for the first time. Announcements and saves use this. */
+  discovered: string[];
+}
+
+const NO_TRIGGER: EggTrigger = { fired: [], discovered: [] };
+
 export interface EggOptions {
   /** Ids already unlocked by the save file. */
   unlocked?: string[];
@@ -76,8 +93,8 @@ export class EasterEggSystem {
     return this.lowGravity ? EGG_TIMING.lowGravityScale : 1;
   }
 
-  /** Feeds one event and returns the egg ids it unlocked. */
-  feed(event: EggEvent): string[] {
+  /** Feeds one event and reports what fired and what was newly discovered. */
+  feed(event: EggEvent): EggTrigger {
     switch (event.type) {
       case 'key':
         return this.onKey(event.code, event.time, event.mode);
@@ -90,21 +107,21 @@ export class EasterEggSystem {
       case 'hour':
         return this.onHour(event.hour);
       default:
-        return [];
+        return NO_TRIGGER;
     }
   }
 
   // --- Triggers ----------------------------------------------------------
 
-  private onKey(code: string, time: number, mode?: string): string[] {
-    const found: string[] = [];
+  private onKey(code: string, time: number, mode?: string): EggTrigger {
+    const fired: string[] = [];
 
     // Konami code: matched against the tail of the recent key history.
     this.keys.push(code);
     if (this.keys.length > KONAMI_SEQUENCE.length) this.keys.shift();
     if (this.matchesKonami()) {
       this.keys = [];
-      found.push(...this.unlock('konami'));
+      fired.push('konami');
     }
 
     // Low gravity: three G presses inside the burst window, in Open Mode.
@@ -115,13 +132,11 @@ export class EasterEggSystem {
       if (this.gravityPresses.length >= EGG_TIMING.gravityPresses) {
         this.gravityPresses = [];
         this.lowGravity = !this.lowGravity;
-        found.push(...this.unlock('moon'));
-        // Reported through the same channel so the app can play the sound; the
-        // on/off state is read from `gravityReduced`.
+        fired.push('moon');
       }
     }
 
-    return found;
+    return this.report(fired);
   }
 
   private matchesKonami(): boolean {
@@ -129,22 +144,22 @@ export class EasterEggSystem {
     return KONAMI_SEQUENCE.every((code, index) => this.keys[index] === code);
   }
 
-  private onChar(char: string): string[] {
+  private onChar(char: string): EggTrigger {
     const letter = char.toLowerCase();
     if (letter < 'a' || letter > 'z') {
       this.typed = '';
-      return [];
+      return NO_TRIGGER;
     }
     this.typed = (this.typed + letter).slice(-MAGIC_WORD.length);
     if (this.typed === MAGIC_WORD) {
       this.typed = '';
-      return this.unlock('glueglue');
+      return this.report(['glueglue']);
     }
-    return [];
+    return NO_TRIGGER;
   }
 
-  private onThrow(event: Extract<EggEvent, { type: 'throw' }>): string[] {
-    const found: string[] = [];
+  private onThrow(event: Extract<EggEvent, { type: 'throw' }>): EggTrigger {
+    const fired: string[] = [];
     const landed = event.status === 'perfect' || event.status === 'landing';
 
     this.missStreak = landed ? 0 : this.missStreak + 1;
@@ -152,39 +167,44 @@ export class EasterEggSystem {
 
     if (this.missStreak >= EGG_TIMING.patienceMisses) {
       this.missStreak = 0;
-      found.push(...this.unlock('patience'));
+      fired.push('patience');
     }
     if (this.offDeskStreak >= EGG_TIMING.lostSticks) {
       this.offDeskStreak = 0;
-      found.push(...this.unlock('lostfound'));
+      fired.push('lostfound');
     }
     if (event.perfectsTotal >= EGG_TIMING.velvetPerfects) {
-      found.push(...this.unlock('velvet'));
+      fired.push('velvet');
     }
-    return found;
+    return this.report(fired);
   }
 
-  private onTitleClick(time: number): string[] {
+  private onTitleClick(time: number): EggTrigger {
     this.titleClicks = this.titleClicks
       .filter((at) => time - at < EGG_TIMING.burstWindow)
       .concat(time);
     if (this.titleClicks.length >= EGG_TIMING.titleClicks) {
       this.titleClicks = [];
-      return this.unlock('credits');
+      return this.report(['credits']);
     }
-    return [];
+    return NO_TRIGGER;
   }
 
-  private onHour(hour: number): string[] {
-    if (hour >= 0 && hour < 4) return this.unlock('insomniac');
-    return [];
+  private onHour(hour: number): EggTrigger {
+    if (hour >= 0 && hour < 4) return this.report(['insomniac']);
+    return NO_TRIGGER;
   }
 
-  /** Records an unlock once and reports it only the first time. */
-  private unlock(id: string): string[] {
-    if (this.unlockedIds.has(id)) return [];
-    this.unlockedIds.add(id);
-    log.info('easter egg unlocked', id);
-    return [id];
+  /**
+   * Splits what fired into "just discovered" and "already known", recording the
+   * new ones. Effects are driven by `fired` so a repeat still does something.
+   */
+  private report(fired: string[]): EggTrigger {
+    const discovered = fired.filter((id) => !this.unlockedIds.has(id));
+    for (const id of discovered) {
+      this.unlockedIds.add(id);
+      log.info('easter egg unlocked', id);
+    }
+    return { fired, discovered };
   }
 }

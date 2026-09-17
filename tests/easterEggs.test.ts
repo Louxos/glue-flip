@@ -21,13 +21,24 @@ import type { EggEvent } from '@/gameplay/EasterEggSystem';
  * without a DOM, a scene or a save file.
  */
 
+/** The ids a press newly discovered. */
 function press(system: EasterEggSystem, code: string, time: number, mode = 'classic'): string[] {
-  return system.feed({ type: 'key', code, time, mode });
+  return system.feed({ type: 'key', code, time, mode }).discovered;
+}
+
+/** What a press fired, whether or not the egg was already known. */
+function pressFired(
+  system: EasterEggSystem,
+  code: string,
+  time: number,
+  mode = 'classic',
+): string[] {
+  return system.feed({ type: 'key', code, time, mode }).fired;
 }
 
 function typeWord(system: EasterEggSystem, word: string): string[] {
   const found: string[] = [];
-  for (const char of word) found.push(...system.feed({ type: 'char', char }));
+  for (const char of word) found.push(...system.feed({ type: 'char', char }).discovered);
   return found;
 }
 
@@ -42,7 +53,18 @@ function throwEvent(
     offDesk: status === 'lost',
     perfectsTotal,
   };
-  return system.feed(event);
+  return system.feed(event).discovered;
+}
+
+/** What a throw fired, whether or not the egg was already known. */
+function throwFired(
+  system: EasterEggSystem,
+  status: 'perfect' | 'landing' | 'failed' | 'lost',
+  perfectsTotal = 0,
+): string[] {
+  return system
+    .feed({ type: 'throw', status, offDesk: status === 'lost', perfectsTotal })
+    .fired;
 }
 
 describe('Konami code', () => {
@@ -176,9 +198,9 @@ describe('Title clicks and late nights', () => {
   it('unlocks the credits after seven quick title clicks', () => {
     const eggs = new EasterEggSystem();
     for (let i = 0; i < EGG_TIMING.titleClicks - 1; i++) {
-      expect(eggs.feed({ type: 'titleClick', time: i * 0.1 })).toEqual([]);
+      expect(eggs.feed({ type: 'titleClick', time: i * 0.1 }).discovered).toEqual([]);
     }
-    expect(eggs.feed({ type: 'titleClick', time: 0.6 })).toEqual(['credits']);
+    expect(eggs.feed({ type: 'titleClick', time: 0.6 }).discovered).toEqual(['credits']);
   });
 
   it('needs the clicks to be close together', () => {
@@ -190,10 +212,11 @@ describe('Title clicks and late nights', () => {
   });
 
   it('unlocks the night shift egg between midnight and 4 a.m.', () => {
-    expect(new EasterEggSystem().feed({ type: 'hour', hour: 0 })).toEqual(['insomniac']);
-    expect(new EasterEggSystem().feed({ type: 'hour', hour: 3 })).toEqual(['insomniac']);
-    expect(new EasterEggSystem().feed({ type: 'hour', hour: 4 })).toEqual([]);
-    expect(new EasterEggSystem().feed({ type: 'hour', hour: 15 })).toEqual([]);
+    const at = (hour: number) => new EasterEggSystem().feed({ type: 'hour', hour }).discovered;
+    expect(at(0)).toEqual(['insomniac']);
+    expect(at(3)).toEqual(['insomniac']);
+    expect(at(4)).toEqual([]);
+    expect(at(15)).toEqual([]);
   });
 });
 
@@ -233,6 +256,59 @@ describe('egg unlocks', () => {
 
   it('ignores eggs that unlock nothing', () => {
     expect(unlockedContent(['moon', 'credits', 'patience'])).toEqual([]);
+  });
+});
+
+/**
+ * Regression: `feed()` used to report only *newly discovered* eggs, so an egg
+ * that was already known produced nothing — and its effect stopped happening.
+ * Low gravity could be switched on but never off, and the patience glow never
+ * returned in a later session even though EASTER_EGGS.md said it did.
+ */
+describe('repeated triggers still take effect', () => {
+  it('keeps firing the gravity toggle after the egg is known', () => {
+    const eggs = new EasterEggSystem();
+    pressFired(eggs, 'KeyG', 0, 'open');
+    pressFired(eggs, 'KeyG', 0.2, 'open');
+    expect(pressFired(eggs, 'KeyG', 0.4, 'open')).toContain('moon');
+    expect(eggs.gravityReduced).toBe(true);
+
+    // Second round: already discovered, but it must still fire so the app can
+    // put gravity back.
+    pressFired(eggs, 'KeyG', 10, 'open');
+    pressFired(eggs, 'KeyG', 10.2, 'open');
+    expect(pressFired(eggs, 'KeyG', 10.4, 'open')).toContain('moon');
+    expect(eggs.gravityReduced).toBe(false);
+    expect(eggs.gravityScale).toBe(1);
+  });
+
+  it('reports the toggle as discovered only the first time', () => {
+    const eggs = new EasterEggSystem();
+    press(eggs, 'KeyG', 0, 'open');
+    press(eggs, 'KeyG', 0.2, 'open');
+    expect(press(eggs, 'KeyG', 0.4, 'open')).toEqual(['moon']);
+
+    press(eggs, 'KeyG', 10, 'open');
+    press(eggs, 'KeyG', 10.2, 'open');
+    expect(press(eggs, 'KeyG', 10.4, 'open')).toEqual([]);
+  });
+
+  it('re-fires the patience assist in a later session', () => {
+    // A returning player already has the egg recorded in the save.
+    const eggs = new EasterEggSystem({ unlocked: ['patience'] });
+    for (let i = 0; i < EGG_TIMING.patienceMisses - 1; i++) {
+      expect(throwFired(eggs, 'failed')).toEqual([]);
+    }
+    expect(throwFired(eggs, 'failed')).toContain('patience');
+  });
+
+  it('re-fires lost-and-found and the velvet threshold when already known', () => {
+    const eggs = new EasterEggSystem({ unlocked: ['lostfound', 'velvet'] });
+
+    for (let i = 0; i < EGG_TIMING.lostSticks - 1; i++) throwFired(eggs, 'lost');
+    expect(throwFired(eggs, 'lost')).toContain('lostfound');
+
+    expect(throwFired(eggs, 'perfect', EGG_TIMING.velvetPerfects)).toContain('velvet');
   });
 });
 

@@ -23,6 +23,7 @@ import type { GameMode, HudState } from '@/gameplay/modes';
 import { UIManager } from '@/ui/UIManager';
 import { t, tOr } from '@/ui/i18n';
 import { EasterEggSystem } from '@/gameplay/EasterEggSystem';
+import type { EggTrigger } from '@/gameplay/EasterEggSystem';
 import { EGG_UNLOCKS, persistsEgg } from '@/config/easterEggs';
 import { PHYSICS } from '@/config/physics';
 import { FEEDBACK } from '@/config/gameplay';
@@ -647,27 +648,33 @@ export class GameApp {
   /** Feeds a key press to the egg detector (Konami code, magic word, gravity). */
   private feedKey(event: KeyboardEvent): void {
     const now = performance.now() / 1000;
-    const found = this.eggs.feed({ type: 'key', code: event.code, time: now, mode: this.mode.id });
+    const trigger = this.eggs.feed({
+      type: 'key',
+      code: event.code,
+      time: now,
+      mode: this.mode.id,
+    });
     if (event.key.length === 1 && /[a-zA-Z]/.test(event.key)) {
-      found.push(...this.eggs.feed({ type: 'char', char: event.key }));
+      this.applyEggs(this.eggs.feed({ type: 'char', char: event.key }));
     }
-    this.applyEggs(found);
+    this.applyEggs(trigger);
   }
 
   /** Feeds a resolved throw (streaks, perfect count, late-night check). */
   private feedThrow(status: 'perfect' | 'landing' | 'failed' | 'lost', offDesk: boolean): void {
-    const found = this.eggs.feed({
-      type: 'throw',
-      status,
-      offDesk,
-      perfectsTotal: this.save.all.stats.perfects,
-    });
+    this.applyEggs(
+      this.eggs.feed({
+        type: 'throw',
+        status,
+        offDesk,
+        perfectsTotal: this.save.all.stats.perfects,
+      }),
+    );
     // The night-shift egg is earned by *landing* one, so only a successful
     // throw checks the clock.
     if (status === 'perfect' || status === 'landing') {
-      found.push(...this.eggs.feed({ type: 'hour', hour: new Date().getHours() }));
+      this.applyEggs(this.eggs.feed({ type: 'hour', hour: new Date().getHours() }));
     }
-    this.applyEggs(found);
   }
 
   /** Menu title clicks (credits egg). */
@@ -676,22 +683,47 @@ export class GameApp {
     this.applyEggs(this.eggs.feed({ type: 'titleClick', time: performance.now() / 1000 }));
   }
 
-  /** Applies whatever an egg just unlocked: saves, physics, UI. */
-  private applyEggs(ids: string[]): void {
-    if (ids.length === 0) return;
-    for (const id of ids) {
+  /**
+   * Applies what an egg event produced.
+   *
+   * Effects come from `fired` and run every time the condition is met, so a
+   * known egg keeps working: pressing G three times again really does switch
+   * gravity back, and the patience glow returns in a later session. Only
+   * `discovered` eggs are saved and announced.
+   */
+  private applyEggs(trigger: EggTrigger): void {
+    if (trigger.fired.length === 0) return;
+
+    for (const id of trigger.fired) {
+      switch (id) {
+        case 'moon':
+          this.physics.world.gravity.y = PHYSICS.gravity * this.eggs.gravityScale;
+          break;
+        case 'patience':
+          this.controller.zone.setAssist(true);
+          break;
+        case 'konami':
+        case 'velvet':
+          // Newly unlocked content must show up in the selectors.
+          this.ui.refreshSave();
+          this.controller.configure(this.controller.currentSetup);
+          break;
+        default:
+          break;
+      }
+    }
+
+    for (const id of trigger.discovered) {
       if (persistsEgg(id)) this.save.addEasterEgg(id);
 
       switch (id) {
         case 'moon':
-          this.physics.world.gravity.y = PHYSICS.gravity * this.eggs.gravityScale;
           this.ui.toast(
             this.eggs.gravityReduced ? t('egg.moonToast') : t('egg.moonOffToast'),
             'good',
           );
           break;
         case 'patience':
-          this.controller.zone.setAssist(true);
           this.ui.toast(t('egg.patienceToast'), 'good');
           break;
         case 'credits':
@@ -707,14 +739,14 @@ export class GameApp {
         const hint = tOr(`egg.${id}Hint`, '');
         if (hint) this.ui.toast(hint, 'info');
       }
-
-      // Newly unlocked sticks and surfaces must show up in the selectors.
-      if (id === 'konami' || id === 'velvet') {
-        this.ui.refreshSave();
-        this.controller.configure(this.controller.currentSetup);
-      }
     }
-    log.info('easter eggs applied', ids);
+
+    // Gravity has to be announced on every toggle, not just the first.
+    if (trigger.fired.includes('moon') && !trigger.discovered.includes('moon')) {
+      this.ui.toast(this.eggs.gravityReduced ? t('egg.moonToast') : t('egg.moonOffToast'), 'good');
+    }
+
+    log.info('easter eggs applied', trigger.fired);
   }
 
   private showCredits(): void {
