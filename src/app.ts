@@ -91,6 +91,7 @@ export class GameApp {
   private menuDrift = true;
   private hudState: HudState | null = null;
   private audioArmed = false;
+  private chainHintShown = false;
   private disposed = false;
 
   private constructor(systems: AppSystems) {
@@ -400,8 +401,9 @@ export class GameApp {
       this.ui.showLanding(result, breakdown);
       this.refreshHud(true);
       this.feedThrow(result.status, result.status === 'lost');
-      // Chaining: tell the player the next throw is already loading.
-      if (this.controller.autoReset) {
+      // Chaining: the stick resets itself, so nudge once — not every throw.
+      if (!this.chainHintShown && this.controller.autoReset) {
+        this.chainHintShown = true;
         window.setTimeout(() => {
           if (!this.paused && this.ui.currentScreen === 'hud') {
             this.ui.toast(t('hud.nextThrowHint'), 'info');
