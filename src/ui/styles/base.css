@@ -1,0 +1,362 @@
+/* ==========================================================================
+   Glue Flip — base styles, design tokens and typography
+   ========================================================================== */
+
+:root {
+  --gf-bg: #07090c;
+  --gf-panel: rgba(14, 17, 21, 0.66);
+  --gf-panel-solid: #10141a;
+  --gf-border: rgba(255, 255, 255, 0.09);
+  --gf-border-strong: rgba(255, 255, 255, 0.18);
+  --gf-text: #f3f5f8;
+  --gf-text-muted: #99a2ad;
+  --gf-text-dim: #6d7783;
+  --gf-accent: #e2a75f;
+  --gf-accent-soft: rgba(226, 167, 95, 0.16);
+  --gf-good: #7fd1a6;
+  --gf-bad: #d98477;
+
+  --gf-font: "Inter", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+  --gf-font-display: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  --gf-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --gf-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --gf-radius: 14px;
+  --gf-radius-sm: 9px;
+  --gf-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+
+  /** Set by UIManager from the saved accessibility settings. */
+  --gf-text-scale: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Accessibility: high contrast
+   Overriding the tokens is enough — every screen reads its colours from here.
+   -------------------------------------------------------------------------- */
+:root[data-contrast='high'] {
+  --gf-panel: rgba(4, 6, 9, 0.94);
+  --gf-panel-solid: #05070a;
+  --gf-border: rgba(255, 255, 255, 0.34);
+  --gf-border-strong: rgba(255, 255, 255, 0.6);
+  --gf-text: #ffffff;
+  --gf-text-muted: #d3dae3;
+  --gf-text-dim: #aab4c0;
+  --gf-accent: #ffc477;
+  --gf-good: #8df0bb;
+  --gf-bad: #ff9d8d;
+  --gf-shadow: 0 24px 60px rgba(0, 0, 0, 0.75);
+}
+
+:root[data-contrast='high'] .gf-hud__score-value,
+:root[data-contrast='high'] .gf-hud__objective,
+:root[data-contrast='high'] .gf-hud__hint,
+:root[data-contrast='high'] .gf-eyebrow {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--gf-bg);
+  color: var(--gf-text);
+  font-family: var(--gf-font);
+  font-size: calc(15px * var(--gf-text-scale));
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overscroll-behavior: none;
+}
+
+#app {
+  position: fixed;
+  inset: 0;
+}
+
+#glue-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+}
+
+/* --------------------------------------------------------------------------
+   UI shell
+   -------------------------------------------------------------------------- */
+
+.gf-ui {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  font-family: var(--gf-font);
+}
+
+.gf-ui > * {
+  pointer-events: auto;
+}
+
+.gf-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 260ms var(--gf-ease), visibility 260ms var(--gf-ease);
+}
+
+.gf-screen.is-visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.gf-screen.is-leaving {
+  opacity: 0;
+}
+
+.gf-panel {
+  background: var(--gf-panel);
+  border: 1px solid var(--gf-border);
+  border-radius: var(--gf-radius);
+  backdrop-filter: blur(22px) saturate(1.15);
+  -webkit-backdrop-filter: blur(22px) saturate(1.15);
+  box-shadow: var(--gf-shadow);
+}
+
+/* --------------------------------------------------------------------------
+   Buttons
+   -------------------------------------------------------------------------- */
+
+.gf-button {
+  position: relative;
+  appearance: none;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--gf-text);
+  font-family: var(--gf-font);
+  font-size: calc(13px * var(--gf-text-scale));
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 14px 22px;
+  min-height: 46px;
+  border-radius: var(--gf-radius-sm);
+  cursor: pointer;
+  transition: color 180ms var(--gf-ease), background 180ms var(--gf-ease),
+    border-color 180ms var(--gf-ease), transform 180ms var(--gf-ease);
+}
+
+.gf-button::after {
+  content: "";
+  position: absolute;
+  left: 22px;
+  right: 22px;
+  bottom: 9px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0;
+  transform: scaleX(0.2);
+  transform-origin: left center;
+  transition: opacity 220ms var(--gf-ease), transform 260ms var(--gf-ease-out);
+}
+
+.gf-button:hover,
+.gf-button:focus-visible {
+  color: var(--gf-accent);
+  background: var(--gf-accent-soft);
+  border-color: rgba(226, 167, 95, 0.28);
+  outline: none;
+}
+
+.gf-button:hover::after,
+.gf-button:focus-visible::after {
+  opacity: 0.7;
+  transform: scaleX(1);
+}
+
+.gf-button:active {
+  transform: translateY(1px);
+}
+
+.gf-button.is-primary {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--gf-border-strong);
+}
+
+.gf-button.is-ghost {
+  color: var(--gf-text-muted);
+  padding: 10px 14px;
+  min-height: 38px;
+  letter-spacing: 0.12em;
+}
+
+.gf-button[disabled] {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.gf-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--gf-border);
+  background: var(--gf-panel);
+  color: var(--gf-text-muted);
+  cursor: pointer;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: color 180ms var(--gf-ease), border-color 180ms var(--gf-ease),
+    background 180ms var(--gf-ease), transform 180ms var(--gf-ease);
+}
+
+.gf-icon-button:hover,
+.gf-icon-button:focus-visible {
+  color: var(--gf-text);
+  border-color: var(--gf-border-strong);
+  background: rgba(255, 255, 255, 0.08);
+  outline: none;
+}
+
+.gf-icon-button:active {
+  transform: scale(0.94);
+}
+
+/* --------------------------------------------------------------------------
+   Text helpers
+   -------------------------------------------------------------------------- */
+
+.gf-eyebrow {
+  font-size: calc(10px * var(--gf-text-scale));
+  font-weight: 600;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--gf-text-dim);
+}
+
+.gf-title {
+  font-family: var(--gf-font-display);
+  font-size: calc(clamp(38px, 8vw, 76px) * var(--gf-text-scale));
+  font-weight: 200;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  margin: 0;
+  line-height: 1;
+}
+
+.gf-subtitle {
+  font-size: calc(13px * var(--gf-text-scale));
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gf-text-muted);
+  margin: 0;
+}
+
+.gf-hint {
+  font-size: calc(12px * var(--gf-text-scale));
+  color: var(--gf-text-dim);
+  letter-spacing: 0.04em;
+}
+
+/* --------------------------------------------------------------------------
+   Loading + fatal states
+   -------------------------------------------------------------------------- */
+
+.gf-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  background: radial-gradient(circle at 50% 40%, #141922 0%, #07090c 70%);
+  z-index: 20;
+  transition: opacity 500ms var(--gf-ease);
+}
+
+.gf-loading.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.gf-loading__bar {
+  width: min(240px, 46vw);
+  height: 2px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.gf-loading__fill {
+  height: 100%;
+  width: 12%;
+  background: var(--gf-accent);
+  transition: width 320ms var(--gf-ease);
+}
+
+.gf-fatal {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background: rgba(7, 9, 12, 0.94);
+  z-index: 40;
+}
+
+.gf-fatal__box {
+  max-width: 460px;
+  padding: 26px 28px;
+  text-align: center;
+}
+
+.gf-fatal__box h2 {
+  margin: 0 0 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+
+.gf-fatal__box p {
+  margin: 0 0 6px;
+  color: var(--gf-text-muted);
+  font-size: calc(13px * var(--gf-text-scale));
+}
+
+.gf-fatal__box code {
+  display: block;
+  margin-top: 12px;
+  padding: 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--gf-bad);
+  font-size: calc(11px * var(--gf-text-scale));
+  text-align: left;
+  overflow: auto;
+  max-height: 120px;
+}
+
+/* --------------------------------------------------------------------------
+   Motion preferences
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+  }
+}

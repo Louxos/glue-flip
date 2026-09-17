@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#07090c" />
+    <meta
+      name="description"
+      content="Glue Flip — a physics game about throwing a glue stick and landing it perfectly upright."
+    />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>Glue Flip — Master the perfect landing</title>
+
+    <!-- Inline boot styles so the first paint is already correct. -->
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #07090c;
+        overflow: hidden;
+      }
+
+      #boot-loading {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 22px;
+        background: radial-gradient(circle at 50% 40%, #141922 0%, #07090c 70%);
+        color: #f3f5f8;
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        transition: opacity 520ms cubic-bezier(0.22, 0.61, 0.36, 1);
+      }
+
+      #boot-loading.is-hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      #boot-loading .eyebrow {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.34em;
+        text-transform: uppercase;
+        color: #6d7783;
+      }
+
+      #boot-loading .title {
+        font-size: clamp(28px, 7vw, 46px);
+        font-weight: 200;
+        letter-spacing: 0.26em;
+        text-transform: uppercase;
+        margin-top: 8px;
+      }
+
+      #boot-loading .bar {
+        width: min(240px, 46vw);
+        height: 2px;
+        border-radius: 2px;
+        background: rgba(255, 255, 255, 0.12);
+        overflow: hidden;
+      }
+
+      #boot-loading .fill {
+        height: 100%;
+        width: 8%;
+        background: #e2a75f;
+        transition: width 320ms cubic-bezier(0.22, 0.61, 0.36, 1);
+      }
+
+      #boot-loading .label {
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: #99a2ad;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="glue-canvas"></canvas>
+      <div id="ui"></div>
+    </div>
+
+    <div id="boot-loading" role="status" aria-live="polite">
+      <div style="text-align: center">
+        <div class="eyebrow">A physics toy</div>
+        <div class="title">Glue Flip</div>
+      </div>
+      <div class="bar"><div class="fill" id="boot-loading-fill"></div></div>
+      <div class="label" id="boot-loading-label">Starting</div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
