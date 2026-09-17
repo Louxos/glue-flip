@@ -19,7 +19,7 @@ npm install
 npm run dev        # http://localhost:5173
 npm run build      # type-check + production bundle in dist/
 npm run preview    # serve the production build
-npm test           # 162 tests, including the real physics engine
+npm test           # 167 tests, including the real physics engine
 npm run typecheck
 npm run smoke      # imports every module: catches bad imports / load-time throws
 ```
@@ -219,7 +219,8 @@ tests/
   physics.test.ts  19 integration tests on the real simulation
   throwGesture.test.ts, landingEvaluator.test.ts, scoreSystem.test.ts,
   progression.test.ts, save.test.ts, smoke.test.ts,
-  i18n.test.ts (translation parity), easterEggs.test.ts (secret triggers)
+  i18n.test.ts (translation parity), easterEggs.test.ts (secret triggers),
+  modeStats.test.ts (lifetime stats per mode)
 ```
 
 Rapier's WASM build runs in Node, so the physics tests exercise the shipped

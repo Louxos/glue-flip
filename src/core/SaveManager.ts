@@ -195,8 +195,17 @@ export class SaveManager {
     record.combo = Math.max(record.combo, input.combo);
     record.level = Math.max(record.level, input.level);
     if (input.perfect) record.perfects += 1;
+    return this.recordLanding(input.perfect);
+  }
+
+  /**
+   * Counts a resolved throw in the lifetime stats. Every mode calls this, so the
+   * menu counters and the "ten perfects" easter egg see Open Mode and Challenges
+   * too — not just Classic.
+   */
+  recordLanding(perfect: boolean): SaveData {
     this.data.stats.landings += 1;
-    if (input.perfect) this.data.stats.perfects += 1;
+    if (perfect) this.data.stats.perfects += 1;
     this.dirty = true;
     this.persist();
     return this.data;

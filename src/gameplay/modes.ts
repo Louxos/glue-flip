@@ -4,7 +4,7 @@ import { getSurface, playableSurfaces } from '@/config/surfaces';
 import { t, tOr } from '@/ui/i18n';
 import { playableGlueSticks } from '@/config/glueSticks';
 import type { LandingResult } from '@/gameplay/LandingEvaluator';
-import { ScoreBoard } from '@/gameplay/ScoreSystem';
+import { ScoreBoard, scoreLanding } from '@/gameplay/ScoreSystem';
 import { buildLevel, levelDifficulty } from '@/gameplay/ProgressionSystem';
 import type { LevelSpec } from '@/gameplay/ProgressionSystem';
 import type { GameController } from '@/gameplay/GameController';
@@ -241,6 +241,8 @@ export class ChallengeMode implements GameMode {
     this.streak = success ? this.streak + 1 : 0;
 
     const breakdown = this.board.apply(result.status, result.precision);
+    // Recorded *before* the event: listeners read the lifetime stats from the save.
+    this.ctx.save.recordLanding(result.status === 'perfect');
     this.ctx.events.emit('landing:result', {
       result,
       breakdown,
@@ -421,11 +423,32 @@ export class OpenMode implements GameMode {
 
   onLanding(result: LandingResult): void {
     this.throws += 1;
-    if (result.status === 'landing' || result.status === 'perfect') {
+    const perfect = result.status === 'perfect';
+    if (result.status === 'landing' || perfect) {
       this.landings += 1;
-      if (result.status === 'perfect') this.perfects += 1;
+      if (perfect) this.perfects += 1;
     }
     this.lastStatus = result.reason;
+
+    // Recorded *before* the event, so listeners see the updated lifetime stats.
+    this.ctx.save.recordResult({
+      mode: 'open',
+      score: this.landings,
+      combo: 0,
+      level: 1,
+      perfect,
+    });
+
+    // Open Mode has no score, but the verdict still has to reach the HUD and
+    // the easter-egg detector — both listen to `landing:result`.
+    this.ctx.events.emit('landing:result', {
+      result,
+      breakdown: scoreLanding({ status: result.status, precision: result.precision, level: 1, combo: 0 }),
+      score: this.landings,
+      combo: 0,
+      level: 1,
+    });
+
     this.ctx.save.addPlayTime(0);
     this.ctx.events.emit('score:change', {
       score: 0,
