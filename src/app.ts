@@ -399,6 +399,7 @@ export class GameApp {
 
     this.events.on('landing:result', ({ result, breakdown }) => {
       this.ui.showLanding(result, breakdown);
+      this.flashOnMiss(result.status);
       this.refreshHud(true);
       this.feedThrow(result.status, result.status === 'lost');
       // Chaining: the stick resets itself, so nudge once — not every throw.
@@ -627,6 +628,18 @@ export class GameApp {
     this.applySettings(this.save.settings);
     this.ui.refreshSave();
     this.ui.toast(t('toast.progressReset'), 'info');
+  }
+
+  /**
+   * Red screen on a miss — but not in Open Mode.
+   *
+   * Classic and Challenges are scored runs, so a miss should sting and then the
+   * stick resets itself. Open Mode is a sandbox: the verdict is enough there.
+   */
+  private flashOnMiss(status: 'perfect' | 'landing' | 'failed' | 'lost'): void {
+    const reduceMotion = this.save.settings.reducedMotion || prefersReducedMotion();
+    const intensity = FEEDBACK.missFlash(this.mode.id, status, reduceMotion);
+    if (intensity !== null) this.ui.flashFail(intensity);
   }
 
   // --- Easter eggs -------------------------------------------------------

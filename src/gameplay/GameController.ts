@@ -102,6 +102,8 @@ export class GameController {
   private lastTrajectory: TrajectoryResult | null = null;
   private settleTimer = 0;
   private resolveTimer = 0;
+  /** True when the last resolved throw failed: the auto-reset waits longer. */
+  private lastThrowFailed = false;
   private lastSpeed = 0;
   private lastSpin = 0;
   private impactCount = 0;
@@ -203,6 +205,7 @@ export class GameController {
     this.flightTime = 0;
     this.settleTimer = 0;
     this.resolveTimer = 0;
+    this.lastThrowFailed = false;
     this.impactCount = 0;
     this.lastSpeed = 0;
     this.lastSpin = 0;
@@ -386,7 +389,10 @@ export class GameController {
         break;
       case 'resolved':
         this.resolveTimer += rawDt;
-        if (this.autoReset && this.resolveTimer > FEEDBACK.chainResetTime) this.prepare();
+        // Misses hold a beat longer so the red flash and the verdict can be read.
+        if (this.autoReset && this.resolveTimer > FEEDBACK.resetDelay(this.lastThrowFailed)) {
+          this.prepare();
+        }
         break;
       case 'idle':
       case 'held':
@@ -593,6 +599,7 @@ export class GameController {
     });
 
     this.resolveTimer = 0;
+    this.lastThrowFailed = result.status === 'failed' || result.status === 'lost';
     this.setPhase('resolved');
     log.debug('landing resolved', {
       status: result.status,

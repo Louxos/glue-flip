@@ -223,6 +223,11 @@ export class UIManager {
     this.hud.showLanding(result, breakdown);
   }
 
+  /** Red screen on a miss (never called in Open Mode). */
+  flashFail(intensity: number): void {
+    this.hud.flashFail(intensity);
+  }
+
   setHint(text: string | null): void {
     this.hud.setHint(text);
   }

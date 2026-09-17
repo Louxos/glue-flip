@@ -69,9 +69,43 @@ export const FEEDBACK = {
    * player can chain throws without touching a button (s).
    */
   chainResetTime: 0.85,
+  /**
+   * Delay before a *failed* throw resets itself. Longer than a success so the
+   * red flash and the verdict have time to be read (s).
+   */
+  failResetTime: 1.25,
+  /** Red vignette shown on a miss outside Open Mode. */
+  failFlash: {
+    /** Peak opacity of the vignette. */
+    opacity: 0.34,
+    /** Fade out over (s). */
+    duration: 0.9,
+    /** Softer vignette when "reduce motion" is on. */
+    reducedOpacity: 0.16,
+  },
   /** Screen shake strength for a perfect landing. */
   perfectShake: 0.011,
   landingShake: 0.006,
+  /**
+   * How long a resolved throw holds on the desk before it resets itself.
+   * A miss holds longer so the red flash and the verdict stay readable.
+   */
+  resetDelay(failed: boolean): number {
+    return failed ? FEEDBACK.failResetTime : FEEDBACK.chainResetTime;
+  },
+  /**
+   * Opacity of the red miss vignette, or null when it must not be shown.
+   *
+   * Open Mode is a sandbox — a miss there is an experiment, not a failure — and
+   * a successful landing never flashes. "Reduce motion" gets a softer vignette.
+   */
+  missFlash(modeId: string, status: string, reduceMotion: boolean): number | null {
+    if (modeId === 'open') return null;
+    if (status !== 'failed' && status !== 'lost') return null;
+    return reduceMotion
+      ? FEEDBACK.failFlash.reducedOpacity
+      : FEEDBACK.failFlash.opacity;
+  },
   /** Mobile vibration patterns (ms). */
   vibrateLanding: [18],
   vibratePerfect: [16, 40, 26],

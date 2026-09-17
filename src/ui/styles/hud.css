@@ -331,3 +331,50 @@
     font-size: calc(28px * var(--gf-text-scale));
   }
 }
+
+/* --------------------------------------------------------------------------
+   Miss flash
+   A red vignette that washes over the screen when a throw is missed outside
+   Open Mode, so the failure reads instantly before the stick resets itself.
+   -------------------------------------------------------------------------- */
+
+.gf-failflash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  --gf-failflash-opacity: 0.34;
+  --gf-failflash-duration: 900ms;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(150, 20, 24, 0) 42%,
+    rgba(150, 20, 24, 0.55) 78%,
+    rgba(120, 12, 16, 0.9) 100%
+  );
+}
+
+.gf-failflash.is-show {
+  animation: gf-failflash var(--gf-failflash-duration) var(--gf-ease-out) forwards;
+}
+
+@keyframes gf-failflash {
+  0% {
+    opacity: 0;
+  }
+  12% {
+    opacity: var(--gf-failflash-opacity);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* High contrast keeps the vignette legible without turning the screen solid. */
+[data-contrast='high'] .gf-failflash {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(190, 24, 28, 0) 38%,
+    rgba(190, 24, 28, 0.7) 76%,
+    rgba(150, 14, 18, 1) 100%
+  );
+}

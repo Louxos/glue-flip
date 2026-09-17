@@ -19,7 +19,7 @@ npm install
 npm run dev        # http://localhost:5173
 npm run build      # type-check + production bundle in dist/
 npm run preview    # serve the production build
-npm test           # 167 tests, including the real physics engine
+npm test           # 176 tests, including the real physics engine
 npm run typecheck
 npm run smoke      # imports every module: catches bad imports / load-time throws
 ```
@@ -182,10 +182,16 @@ dictionaries, with English as the source of truth: `FR` is typed
 `tests/i18n.test.ts` additionally pins runtime parity plus a translated name for
 every stick, surface and challenge.
 
-**Chaining throws** — the menu is deliberately one big action (Play) with three
-secondary ones, and after every landing the stick resets itself in 0.85 s
-(`FEEDBACK.chainResetTime`) with a "press R" hint, so a session can be a continuous
-run of flicks instead of a click per throw.
+**Auto-restart and chaining** — the menu is deliberately one big action (Play)
+with three secondary ones, and in every mode the stick resets itself after each
+throw: 0.85 s on a success (`FEEDBACK.chainResetTime`) so a session is a
+continuous run of flicks, and 1.25 s on a miss (`FEEDBACK.failResetTime`) so the
+verdict has time to be read. A "press R" hint appears once per session.
+
+In Classic and Challenges, a miss also washes a red vignette over the screen
+(`FEEDBACK.failFlash`) before the reset. Open Mode is a sandbox, so it never
+flashes — the verdict is enough there. "Reduce motion" gets a softer vignette
+rather than none, and high contrast gets a stronger one.
 
 Accessibility, in its own section:
 
@@ -220,7 +226,8 @@ tests/
   throwGesture.test.ts, landingEvaluator.test.ts, scoreSystem.test.ts,
   progression.test.ts, save.test.ts, smoke.test.ts,
   i18n.test.ts (translation parity), easterEggs.test.ts (secret triggers),
-  modeStats.test.ts (lifetime stats per mode)
+  modeStats.test.ts (lifetime stats per mode),
+  autoRestart.test.ts (reset timing, miss-flash rules)
 ```
 
 Rapier's WASM build runs in Node, so the physics tests exercise the shipped

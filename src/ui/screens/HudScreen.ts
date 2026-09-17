@@ -1,6 +1,7 @@
 import type { LandingResult } from '@/gameplay/LandingEvaluator';
 import type { ScoreBreakdown } from '@/gameplay/ScoreSystem';
 import type { HudState } from '@/gameplay/modes';
+import { FEEDBACK } from '@/config/gameplay';
 import { Screen } from '@/ui/Screen';
 import { t, tOr } from '@/ui/i18n';
 import { el, restartAnimation } from '@/utils/dom';
@@ -25,6 +26,7 @@ export class HudScreen extends Screen {
   private resultTitle!: HTMLElement;
   private resultSub!: HTMLElement;
   private resultPoints!: HTMLElement;
+  private failFlash!: HTMLElement;
   private lastScore = -1;
   private callbacks: UiCallbacks;
   private state: HudState | null = null;
@@ -77,7 +79,11 @@ export class HudScreen extends Screen {
       this.resultPoints,
     ]);
 
+    // Red vignette for a miss. Hidden in Open Mode by the caller.
+    this.failFlash = el('div', { class: 'gf-failflash', 'aria-hidden': 'true' });
+
     this.element.replaceChildren(
+      this.failFlash,
       el('div', { class: 'gf-hud__top' }, [
         el('div', { class: 'gf-hud__score' }, [
           el('span', { class: 'gf-eyebrow', text: t('hud.score') }),
@@ -135,6 +141,21 @@ export class HudScreen extends Screen {
     this.power.classList.add('is-visible');
     this.powerFill.style.width = `${Math.round(power * 100)}%`;
     this.powerLabel.textContent = `${Math.round(power * 100)}% · ${rotations.toFixed(1)} ${t('hud.rotations')}`;
+  }
+
+  /**
+   * Red vignette + the verdict, used for a miss.
+   *
+   * `intensity` lets the app soften it when "reduce motion" is on, and the whole
+   * effect is skipped entirely in Open Mode, where a miss is just an experiment.
+   */
+  flashFail(intensity: number): void {
+    this.failFlash.style.setProperty('--gf-failflash-opacity', String(intensity));
+    this.failFlash.style.setProperty(
+      '--gf-failflash-duration',
+      `${FEEDBACK.failFlash.duration * 1000}ms`,
+    );
+    restartAnimation(this.failFlash, 'is-show');
   }
 
   /** Big landing verdict. */
