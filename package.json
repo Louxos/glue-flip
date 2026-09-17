@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Glue Flip — an ultra-realistic 3D physics game: throw a glue stick, land it perfectly upright.",
+  "description": "Glue Flip \u2014 an ultra-realistic 3D physics game: throw a glue stick, land it perfectly upright.",
   "author": "Louxos",
   "license": "MIT",
   "scripts": {
@@ -13,16 +13,20 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "smoke": "vitest run --config vitest.smoke.config.ts"
+    "smoke": "vitest run --config vitest.smoke.config.ts",
+    "verify": "node scripts/verify-render.mjs"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.19.2",
     "three": "^0.180.0"
   },
   "devDependencies": {
+    "@sparticuz/chromium": "^153.0.0",
     "@types/node": "^22.20.3",
     "@types/three": "^0.180.0",
     "jsdom": "^30.1.0",
+    "pngjs": "^7.0.0",
+    "puppeteer": "^25.11.0",
     "typescript": "^5.9.2",
     "vite": "^7.1.5",
     "vitest": "^3.2.4"

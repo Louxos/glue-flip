@@ -237,6 +237,8 @@ tests/
   lowGravity.test.ts (the Desk Moon egg, on the real physics engine),
   autoResetContract.test.ts (when each mode stops restarting),
   moduleEval.test.ts (the whole module graph evaluates, not just compiles)
+
+scripts/verify-render.mjs   real headless-Chromium render check (`npm run verify`)
 ```
 
 Rapier's WASM build runs in Node, so the physics tests exercise the shipped
@@ -258,11 +260,17 @@ its effect and whether it persists. The triggers live in
 
 ## Notes and limitations
 
-- Verification here was `tsc --noEmit`, the test suite (which runs the real physics
-  engine and, in `tests/hudDom.test.ts`, a real jsdom DOM), `vite build`, and the
-  dev server serving the module graph. There is no headless *browser* in this
-  environment, so the WebGL rendering itself is still not exercised by an
-  automated test — the DOM above it now is.
+- Verification is layered. `tsc --noEmit`, the unit/integration suite (real Rapier
+  physics plus a real jsdom DOM in `tests/hudDom.test.ts`), and `vite build`.
+  On top of that, `npm run verify` drives a **real headless Chromium** (the binary
+  and its NSS/SwiftShader libraries are self-provisioned from
+  `@sparticuz/chromium`, so it runs anywhere `npm install` works, with software
+  WebGL). It asserts the app boots, the WebGL context is live, the menu and HUD
+  really render non-black frames (screenshots are decoded and pixel-analysed), a
+  throw gesture reaches the physics, and the console stays clean.
+- Screenshots are read with `preserveDrawingBuffer:false`, so they are the ground
+  truth; `readPixels` on the live canvas would always return black and must not be
+  used to judge whether a frame rendered.
 - The HMR websocket may not connect through a reverse proxy; reloads still work.
 - The Rapier bundle is ~2.2 MB (830 KB gzipped) because the WASM payload is
   inlined; it is split into its own chunk and loaded once at boot.
