@@ -74,6 +74,14 @@ export const FEEDBACK = {
    * red flash and the verdict have time to be read (s).
    */
   failResetTime: 1.25,
+  /**
+   * Delay before the end-of-run card covers the screen (s).
+   *
+   * `run:over` is emitted in the same synchronous call as the landing verdict,
+   * and the card paints above the HUD with an opaque backdrop — without this
+   * delay it would hide the red flash before its first frame ever showed.
+   */
+  resultCardDelay: 0.72,
   /** Red vignette shown on a miss outside Open Mode. */
   failFlash: {
     /** Peak opacity of the vignette. */

@@ -29,6 +29,25 @@ describe('auto-restart timing', () => {
   });
 });
 
+/**
+ * The end-of-run card paints above the HUD with an opaque backdrop, and in
+ * Classic `run:over` is emitted in the same synchronous call as the verdict.
+ * Without a delay the card would cover the red flash before its first frame.
+ */
+describe('result card timing', () => {
+  it('waits long enough for the miss flash to be seen', () => {
+    expect(FEEDBACK.resultCardDelay).toBeGreaterThanOrEqual(FEEDBACK.failFlash.duration * 0.75);
+  });
+
+  it('does not stall the player before the card appears', () => {
+    expect(FEEDBACK.resultCardDelay).toBeLessThan(1.2);
+  });
+
+  it('lands inside the miss hold window, so the desk is still staged', () => {
+    expect(FEEDBACK.resultCardDelay).toBeLessThanOrEqual(FEEDBACK.failResetTime);
+  });
+});
+
 describe('miss flash', () => {
   it('flashes red on a miss in the scored modes', () => {
     expect(FEEDBACK.missFlash('classic', 'failed', false)).toBe(FEEDBACK.failFlash.opacity);

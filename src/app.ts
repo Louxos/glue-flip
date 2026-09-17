@@ -447,22 +447,28 @@ export class GameApp {
     });
     this.events.on('challenge:failed', ({ name }) => {
       const hud = this.mode.hud();
-      this.ui.presentResult({
-        title: t('result.outOfThrows'),
-        note: t('result.challengeAgain', { name }),
-        summary: [
-          { label: t('result.best'), value: hud.bestScore },
-          { label: t('result.landings'), value: hud.stats.landings },
-        ],
-        buttons: [
-          { label: t('result.menu'), run: () => this.toMenu() },
-          { label: t('result.retry'), primary: true, run: () => this.restart() },
-        ],
-      });
+      // Delayed: the card paints above the HUD with an opaque backdrop, so
+      // showing it instantly would hide the red miss flash entirely.
+      this.later(() =>
+        this.ui.presentResult({
+          title: t('result.outOfThrows'),
+          note: t('result.challengeAgain', { name }),
+          summary: [
+            { label: t('result.best'), value: hud.bestScore },
+            { label: t('result.landings'), value: hud.stats.landings },
+          ],
+          buttons: [
+            { label: t('result.menu'), run: () => this.toMenu() },
+            { label: t('result.retry'), primary: true, run: () => this.restart() },
+          ],
+        }),
+      );
     });
     this.events.on('run:over', ({ score, bestCombo, landings, perfects, level }) => {
       const best = this.save.all.best.classic;
-      this.ui.presentResult({
+      // Delayed for the same reason: a Classic run ends on a miss, and the miss
+      // flash has to be visible before the card covers it.
+      this.later(() => this.ui.presentResult({
         title: t('result.runOver'),
         note:
           score > 0 && score >= best.score
@@ -479,7 +485,7 @@ export class GameApp {
           { label: t('result.menu'), run: () => this.toMenu() },
           { label: t('result.again'), primary: true, run: () => this.restart() },
         ],
-      });
+      }));
     });
     this.events.on('toast', ({ text, tone }) => this.ui.toast(text, tone ?? 'info'));
   }
@@ -629,6 +635,17 @@ export class GameApp {
     this.applySettings(this.save.settings);
     this.ui.refreshSave();
     this.ui.toast(t('toast.progressReset'), 'info');
+  }
+
+  /**
+   * Runs a callback after the result-card delay, unless the app was torn down.
+   * Used to let the miss flash play before an opaque card covers the screen.
+   */
+  private later(run: () => void): void {
+    window.setTimeout(() => {
+      if (this.disposed) return;
+      run();
+    }, FEEDBACK.resultCardDelay * 1000);
   }
 
   /**

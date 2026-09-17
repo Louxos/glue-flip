@@ -19,7 +19,7 @@ npm install
 npm run dev        # http://localhost:5173
 npm run build      # type-check + production bundle in dist/
 npm run preview    # serve the production build
-npm test           # 202 tests, including the real physics engine
+npm test           # 205 tests, including the real physics engine
 npm run typecheck
 npm run smoke      # imports every module: catches bad imports / load-time throws
 ```
