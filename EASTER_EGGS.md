@@ -92,7 +92,8 @@ only.*
 - **Déclencheur** : cliquer **7 fois** sur le titre « Glue Flip » du menu principal en
   moins de 2,5 secondes.
 - **Effet** : ouvre la carte du générique (moteur physique, technologies, remerciements),
-  avec le meilleur score et le nombre de parfaits.
+  avec le meilleur score et le nombre de parfaits. C'est un écran que l'on peut
+  rouvrir : refaire les 7 clics le rappelle, même une fois l'œuf trouvé.
 - **Persistance** : `credits`.
 
 ---

@@ -708,6 +708,11 @@ export class GameApp {
           this.ui.refreshSave();
           this.controller.configure(this.controller.currentSetup);
           break;
+        case 'credits':
+          // The credits are a viewer, not a one-off reward: clicking the title
+          // seven times again has to bring them back.
+          this.showCredits();
+          break;
         default:
           break;
       }
@@ -727,7 +732,7 @@ export class GameApp {
           this.ui.toast(t('egg.patienceToast'), 'good');
           break;
         case 'credits':
-          this.showCredits();
+          // Opened by the effect pass above; no extra announcement.
           break;
         default:
           this.ui.toast(tOr(`egg.${id}Toast`, t('egg.unlocked')), 'good');
