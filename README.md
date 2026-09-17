@@ -19,7 +19,7 @@ npm install
 npm run dev        # http://localhost:5173
 npm run build      # type-check + production bundle in dist/
 npm run preview    # serve the production build
-npm test           # 196 tests, including the real physics engine
+npm test           # 202 tests, including the real physics engine
 npm run typecheck
 npm run smoke      # imports every module: catches bad imports / load-time throws
 ```
@@ -183,10 +183,15 @@ dictionaries, with English as the source of truth: `FR` is typed
 every stick, surface and challenge.
 
 **Auto-restart and chaining** — the menu is deliberately one big action (Play)
-with three secondary ones, and in every mode the stick resets itself after each
-throw: 0.85 s on a success (`FEEDBACK.chainResetTime`) so a session is a
-continuous run of flicks, and 1.25 s on a miss (`FEEDBACK.failResetTime`) so the
-verdict has time to be read. A "press R" hint appears once per session.
+with three secondary ones, and the stick resets itself after each throw: 0.85 s
+on a success (`FEEDBACK.chainResetTime`) so a session is a continuous run of
+flicks, and 1.25 s on a miss (`FEEDBACK.failResetTime`) so the verdict has time
+to be read. A "press R" hint appears once per session.
+
+When it *stops* is a rule of the mode, pinned by `tests/autoResetContract.test.ts`:
+Open Mode never stops; a Challenge stops when the goal is met or the throw budget
+runs out; Classic stops on the first miss, because in a streak game a miss is the
+end of the run.
 
 In Classic and Challenges, a miss also washes a red vignette over the screen
 (`FEEDBACK.failFlash`) before the reset. Open Mode is a sandbox, so it never
@@ -229,7 +234,8 @@ tests/
   modeStats.test.ts (lifetime stats per mode),
   autoRestart.test.ts (reset timing, miss-flash rules),
   hudDom.test.ts (real DOM: flash, translated verdict, menu),
-  lowGravity.test.ts (the Desk Moon egg, on the real physics engine)
+  lowGravity.test.ts (the Desk Moon egg, on the real physics engine),
+  autoResetContract.test.ts (when each mode stops restarting)
 ```
 
 Rapier's WASM build runs in Node, so the physics tests exercise the shipped
