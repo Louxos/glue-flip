@@ -12,6 +12,7 @@ import { ChallengesScreen } from '@/ui/screens/ChallengesScreen';
 import { ResultScreen } from '@/ui/screens/ResultScreen';
 import type { ResultConfig } from '@/ui/screens/ResultScreen';
 import { el } from '@/utils/dom';
+import { isBrowser } from '@/utils/platform';
 import { createLogger } from '@/utils/logger';
 
 import '@/ui/styles/base.css';
@@ -69,6 +70,7 @@ export class UIManager {
 
     this.root.classList.add('gf-ui');
     setLanguage(save.settings.language);
+    if (isBrowser()) document.documentElement.lang = save.settings.language;
 
     this.menu = new MenuScreen(save.all, callbacks);
     this.hud = new HudScreen(callbacks);
@@ -271,6 +273,7 @@ export class UIManager {
    */
   applyLanguage(language: Settings['language']): void {
     setLanguage(language);
+    if (isBrowser()) document.documentElement.lang = language;
     for (const screen of this.allScreens()) screen.rebuild();
     this.refreshSave();
   }

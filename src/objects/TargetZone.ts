@@ -10,6 +10,9 @@ import { damp } from '@/utils/math';
  * body position, never from a trigger volume, so the player is never cheated by
  * a collider that does not match the decal.
  */
+/** Opacity the zone rests at (0.9 while the patience assist is on). */
+const BASE_OPACITY = 0.55;
+
 export class TargetZone {
   readonly mesh: THREE.Mesh;
   private texture: THREE.CanvasTexture;
@@ -18,6 +21,8 @@ export class TargetZone {
   private radius: number;
   private pulse = 0;
   private targetOpacity: number;
+  private visible = true;
+  private assist = false;
 
   constructor(radius: number = 0.2, height: number = WORLD.desk.topY) {
     this.radius = radius;
@@ -26,7 +31,7 @@ export class TargetZone {
     this.material = new THREE.MeshBasicMaterial({
       map: this.texture,
       transparent: true,
-      opacity: 0.55,
+      opacity: BASE_OPACITY,
       depthWrite: false,
       blending: THREE.NormalBlending,
       toneMapped: false,
@@ -39,7 +44,7 @@ export class TargetZone {
     this.mesh.position.y = height + 0.0012;
     this.mesh.name = 'target-zone';
     this.mesh.renderOrder = 2;
-    this.targetOpacity = 0.55;
+    this.targetOpacity = BASE_OPACITY;
   }
 
   get currentRadius(): number {
@@ -59,12 +64,27 @@ export class TargetZone {
   }
 
   setVisible(visible: boolean): void {
-    this.targetOpacity = visible ? 0.55 : 0;
+    this.visible = visible;
+    this.applyTargetOpacity();
   }
 
   /** Emphasises the zone right before a landing. */
   highlight(amount: number): void {
     this.material.opacity = Math.min(0.9, this.material.opacity + amount);
+  }
+
+  /**
+   * Persistent guide glow, used by the "patience" easter egg after a run of
+   * misses. Unlike `highlight()` this survives the opacity damping, because it
+   * moves the target the zone settles at rather than nudging the current value.
+   */
+  setAssist(on: boolean): void {
+    this.assist = on;
+    this.applyTargetOpacity();
+  }
+
+  private applyTargetOpacity(): void {
+    this.targetOpacity = this.visible ? (this.assist ? 0.9 : BASE_OPACITY) : 0;
   }
 
   update(dt: number, elapsed: number): void {

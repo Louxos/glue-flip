@@ -671,7 +671,7 @@ export class GameApp {
           );
           break;
         case 'patience':
-          this.controller.zone.highlight(1);
+          this.controller.zone.setAssist(true);
           this.ui.toast(t('egg.patienceToast'), 'good');
           break;
         case 'credits':
