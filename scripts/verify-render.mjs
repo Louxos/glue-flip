@@ -157,18 +157,46 @@ try {
   results.hud = hud;
   hud.hudVisible ? pass(`HUD visible (score "${hud.score}")`) : fail('HUD not visible after Play');
 
+  // The miss flow below needs a mode where a miss neither ends the run (Classic)
+  // nor skips the red flash (Open). A challenge with a generous throw budget is
+  // exactly that: miss -> red flash -> the stick comes back by itself.
+  await page.evaluate(() => window.glueFlip.startChallenge('long-shot'));
+  await new Promise((r) => setTimeout(r, 1200));
+
+  // Project the stick's live world position to screen coords so a pointer-down
+  // genuinely lands on it; guessing at a fixed point misses the thin collider.
+  const stickScreen = () =>
+    page.evaluate(() => {
+      const v = window.glueFlip.controller.entity.position.clone();
+      v.project(window.glueFlip.engine.camera);
+      const r = window.glueFlip.engine.canvas.getBoundingClientRect();
+      return { x: r.x + ((v.x + 1) / 2) * r.width, y: r.y + ((1 - v.y) / 2) * r.height };
+    });
+
+  // The camera eases into place after Play, so a projection done a moment early
+  // can miss the thin stick. Retry the grab until the controller reports held.
+  const grabAndDrag = async (steps, dx, dy, delay) => {
+    for (let t = 0; t < 10; t++) {
+      const s = await stickScreen();
+      await page.mouse.move(s.x, s.y);
+      await page.mouse.down();
+      const phase = await page.evaluate(() => window.glueFlip.controller.phase);
+      if (phase === 'held') {
+        for (let i = 1; i <= steps; i++) {
+          await page.mouse.move(s.x + i * dx, s.y + i * dy);
+          await new Promise((r) => setTimeout(r, delay));
+        }
+        await page.mouse.up();
+        return true;
+      }
+      await page.mouse.up();
+      await new Promise((r) => setTimeout(r, 300));
+    }
+    return false;
+  };
+
   // ---- a real throw gesture end to end ----
-  const box = await page.evaluate(() => {
-    const r = document.querySelector('canvas').getBoundingClientRect();
-    return { x: r.x + r.width / 2, y: r.y + r.height * 0.74 };
-  });
-  await page.mouse.move(box.x, box.y);
-  await page.mouse.down();
-  for (let i = 1; i <= 12; i++) {
-    await page.mouse.move(box.x + i * 2, box.y - i * 11);
-    await new Promise((r) => setTimeout(r, 16));
-  }
-  await page.mouse.up();
+  await grabAndDrag(12, 2, -11, 16);
   await new Promise((r) => setTimeout(r, 4000));
 
   const throwShot = await page.screenshot();
@@ -177,6 +205,73 @@ try {
   results.afterThrowPixels = throwPx;
   if (throwPx.distinct > 40) pass(`post-throw frame has content (${throwPx.distinct} shades)`);
   else fail('post-throw frame looks blank');
+
+  // ---- the miss flow: red flash + auto-restart, exactly as asked ----
+  // Listen to the app's own events so we observe a real miss and the phase
+  // returning to idle (the stick coming back by itself) without touching code.
+  await page.evaluate(() => {
+    window.__phases = [];
+    window.__results = [];
+    window.glueFlip.events.on('phase:change', (e) => window.__phases.push(e.phase));
+    window.glueFlip.events.on('landing:result', (e) => window.__results.push(e.result.status));
+  });
+
+  // A strong, fast flick tumbles the stick so it cannot land upright => a miss.
+  // High release speed plus high curl => several rotations => it topples.
+  const strong = async () => grabAndDrag(5, 10, -40, 8);
+
+  const waitLanding = async (before) => {
+    const t0 = Date.now();
+    while (Date.now() - t0 < 12000) {
+      const n = await page.evaluate(() => window.__results.length);
+      if (n > before) return;
+      await new Promise((r) => setTimeout(r, 250));
+    }
+  };
+
+  let missSeen = false;
+  for (let attempt = 0; attempt < 4 && !missSeen; attempt++) {
+    const before = await page.evaluate(() => window.__results.length);
+    await strong();
+    await waitLanding(before);
+    await new Promise((r) => setTimeout(r, 400));
+    missSeen = await page.evaluate(() => window.__results.some((s) => s === 'failed' || s === 'lost'));
+  }
+  results.miss = { missSeen, results: await page.evaluate(() => window.__results) };
+
+  if (missSeen) {
+    pass(`a miss was observed (${results.miss.results.join(',')})`);
+    const flash = await page.evaluate(() => ({
+      fail: document.querySelector('.gf-failflash')?.classList.contains('is-show') ?? false,
+      failVisible: getComputedStyle(document.querySelector('.gf-failflash')).animationName === 'gf-failflash',
+      resultFail: document.querySelector('.gf-result')?.classList.contains('is-fail') ?? false,
+      verdict: document.querySelector('.gf-result__title')?.textContent?.trim() ?? null,
+    }));
+    results.missFlash = flash;
+    flash.fail ? pass('red fail flash triggered') : fail('red fail flash did not trigger on a miss');
+    flash.resultFail && flash.verdict ? pass(`verdict shows a miss: "${flash.verdict}"`) : fail('miss verdict not shown');
+
+    // After the reset delay the stick must come back by itself: a reset lifts it
+    // upright at the spawn point (y back near standing height) and returns the
+    // phase to idle. A stick left lying where it fell stays low. Poll for either
+    // physical signal.
+    const t0 = Date.now();
+    let resetState = null;
+    while (Date.now() - t0 < 4000) {
+      resetState = await page.evaluate(() => ({
+        phase: window.glueFlip.controller.phase,
+        y: +window.glueFlip.controller.entity.position.y.toFixed(3),
+      }));
+      if (resetState.phase === 'idle' || resetState.y > 0.7) break;
+      await new Promise((r) => setTimeout(r, 250));
+    }
+    results.reset = resetState;
+    resetState && (resetState.phase === 'idle' || resetState.y > 0.7)
+      ? pass(`stick came back by itself (phase=${resetState.phase}, y=${resetState.y})`)
+      : fail(`stick did not auto-restart after the miss (phase=${resetState?.phase}, y=${resetState?.y})`);
+  } else {
+    fail('could not produce a miss in 4 throws');
+  }
 
   // ---- console hygiene ----
   results.consoleErrors = consoleErrors;
