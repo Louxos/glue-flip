@@ -3,6 +3,7 @@ import { WORLD } from '@/config/world';
 import { getSurface, playableSurfaces } from '@/config/surfaces';
 import { t, tOr } from '@/ui/i18n';
 import { playableGlueSticks } from '@/config/glueSticks';
+import { unlockedContent } from '@/config/easterEggs';
 import type { LandingResult } from '@/gameplay/LandingEvaluator';
 import { ScoreBoard, scoreLanding } from '@/gameplay/ScoreSystem';
 import { buildLevel, levelDifficulty } from '@/gameplay/ProgressionSystem';
@@ -388,7 +389,7 @@ export class OpenMode implements GameMode {
 
   private apply(): void {
     // Unlocked easter-egg surfaces join the cycle automatically.
-    const surfaces = playableSurfaces(this.ctx.save.all.easterEggs).map((surface) => surface.id);
+    const surfaces = playableSurfaces(unlockedContent(this.ctx.save.all.easterEggs)).map((surface) => surface.id);
     const surfaceId = surfaces[this.surfaceIndex % surfaces.length];
     this.controller?.configure({
       surfaceId,
@@ -413,7 +414,7 @@ export class OpenMode implements GameMode {
 
   cycleStick(): void {
     const save = this.ctx.save;
-    const ids = playableGlueSticks(save.all.easterEggs).map((stick) => stick.id);
+    const ids = playableGlueSticks(unlockedContent(save.all.easterEggs)).map((stick) => stick.id);
     const index = (ids.indexOf(save.all.selectedGlueStick) + 1) % ids.length;
     save.update((data) => {
       data.selectedGlueStick = ids[index];

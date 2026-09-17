@@ -19,7 +19,7 @@ npm install
 npm run dev        # http://localhost:5173
 npm run build      # type-check + production bundle in dist/
 npm run preview    # serve the production build
-npm test           # 176 tests, including the real physics engine
+npm test           # 188 tests, including the real physics engine
 npm run typecheck
 npm run smoke      # imports every module: catches bad imports / load-time throws
 ```
@@ -227,7 +227,8 @@ tests/
   progression.test.ts, save.test.ts, smoke.test.ts,
   i18n.test.ts (translation parity), easterEggs.test.ts (secret triggers),
   modeStats.test.ts (lifetime stats per mode),
-  autoRestart.test.ts (reset timing, miss-flash rules)
+  autoRestart.test.ts (reset timing, miss-flash rules),
+  hudDom.test.ts (real DOM: flash, translated verdict, menu)
 ```
 
 Rapier's WASM build runs in Node, so the physics tests exercise the shipped
@@ -250,9 +251,10 @@ its effect and whether it persists. The triggers live in
 ## Notes and limitations
 
 - Verification here was `tsc --noEmit`, the test suite (which runs the real physics
-  engine), `vite build`, and the dev server serving the module graph. There is no
-  headless browser in this environment, so the WebGL rendering itself was not
-  exercised by an automated test.
+  engine and, in `tests/hudDom.test.ts`, a real jsdom DOM), `vite build`, and the
+  dev server serving the module graph. There is no headless *browser* in this
+  environment, so the WebGL rendering itself is still not exercised by an
+  automated test — the DOM above it now is.
 - The HMR websocket may not connect through a reverse proxy; reloads still work.
 - The Rapier bundle is ~2.2 MB (830 KB gzipped) because the WASM payload is
   inlined; it is split into its own chunk and loaded once at boot.

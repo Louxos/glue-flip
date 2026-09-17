@@ -31,6 +31,23 @@ export const EASTER_EGGS: EasterEggDefinition[] = [
   { id: 'insomniac', persists: false, kind: 'time' },
 ];
 
+/**
+ * Which hidden content each egg unlocks, by *content* id.
+ *
+ * Kept explicit because the ids do not match: finding `konami` unlocks the
+ * `gold` stick. Comparing egg ids against content ids (as the first version did)
+ * silently locked the reward away forever.
+ */
+export const EGG_UNLOCKS: Record<string, string[]> = {
+  konami: ['gold'],
+  velvet: ['velvet'],
+};
+
+/** Content ids the player has earned from the eggs they found. */
+export function unlockedContent(eggs: string[]): string[] {
+  return eggs.flatMap((egg) => EGG_UNLOCKS[egg] ?? []);
+}
+
 export const EASTER_EGG_IDS = EASTER_EGGS.map((egg) => egg.id);
 
 export function isEasterEggId(id: string): boolean {

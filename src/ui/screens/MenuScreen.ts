@@ -5,6 +5,7 @@ import { Screen } from '@/ui/Screen';
 import { t, tOr } from '@/ui/i18n';
 import { el } from '@/utils/dom';
 import type { UiCallbacks } from '@/ui/UIManager';
+import { unlockedContent } from '@/config/easterEggs';
 
 /**
  * Main menu, rendered over the live 3D desk.
@@ -83,7 +84,7 @@ export class MenuScreen extends Screen {
   }
 
   private cycleStick(): void {
-    const available = playableGlueSticks(this.save.easterEggs);
+    const available = playableGlueSticks(unlockedContent(this.save.easterEggs));
     const index = available.findIndex((stick) => stick.id === this.save.selectedGlueStick);
     const next = available[(index + 1) % available.length] ?? available[0];
     this.callbacks.onSelectStick(next.id);
@@ -123,7 +124,7 @@ export class MenuScreen extends Screen {
   }
 
   private selectedStick(): GlueStickVariant {
-    const available = playableGlueSticks(this.save.easterEggs);
+    const available = playableGlueSticks(unlockedContent(this.save.easterEggs));
     return (
       available.find((stick) => stick.id === this.save.selectedGlueStick) ?? available[0]
     );

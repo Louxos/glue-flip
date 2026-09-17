@@ -22,6 +22,7 @@
   "devDependencies": {
     "@types/node": "^22.20.3",
     "@types/three": "^0.180.0",
+    "jsdom": "^30.1.0",
     "typescript": "^5.9.2",
     "vite": "^7.1.5",
     "vitest": "^3.2.4"

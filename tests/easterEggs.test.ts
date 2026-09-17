@@ -1,5 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { EASTER_EGG_IDS, KONAMI_SEQUENCE, EGG_TIMING, persistsEgg } from '@/config/easterEggs';
+import {
+  EASTER_EGG_IDS,
+  KONAMI_SEQUENCE,
+  EGG_TIMING,
+  EGG_UNLOCKS,
+  persistsEgg,
+  unlockedContent,
+} from '@/config/easterEggs';
+import { GLUE_STICKS } from '@/config/glueSticks';
+import { SURFACES } from '@/config/surfaces';
+import { playableGlueSticks } from '@/config/glueSticks';
+import { playableSurfaces } from '@/config/surfaces';
 import { EasterEggSystem } from '@/gameplay/EasterEggSystem';
 import type { EggEvent } from '@/gameplay/EasterEggSystem';
 
@@ -183,6 +194,45 @@ describe('Title clicks and late nights', () => {
     expect(new EasterEggSystem().feed({ type: 'hour', hour: 3 })).toEqual(['insomniac']);
     expect(new EasterEggSystem().feed({ type: 'hour', hour: 4 })).toEqual([]);
     expect(new EasterEggSystem().feed({ type: 'hour', hour: 15 })).toEqual([]);
+  });
+});
+
+/**
+ * Regression: the first version compared egg ids against content ids, so finding
+ * `konami` never revealed the `gold` stick — the reward was unreachable. Every
+ * unlock must map onto a real, hidden piece of content.
+ */
+describe('egg unlocks', () => {
+  it('maps each unlocking egg onto content that actually exists and is hidden', () => {
+    const stickIds = GLUE_STICKS.map((stick) => stick.id);
+    const surfaceIds = SURFACES.map((surface) => surface.id);
+
+    for (const [egg, contents] of Object.entries(EGG_UNLOCKS)) {
+      expect(EASTER_EGG_IDS).toContain(egg);
+      for (const id of contents) {
+        const isStick = stickIds.includes(id);
+        const isSurface = surfaceIds.includes(id);
+        expect(isStick || isSurface, `${egg} unlocks unknown content "${id}"`).toBe(true);
+        const preset = isStick
+          ? GLUE_STICKS.find((stick) => stick.id === id)!
+          : SURFACES.find((surface) => surface.id === id)!;
+        expect(preset.secret, `${id} should stay hidden until unlocked`).toBe(true);
+      }
+    }
+  });
+
+  it('reveals the golden stick once the Konami egg is found', () => {
+    expect(playableGlueSticks(unlockedContent([])).map((s) => s.id)).not.toContain('gold');
+    expect(playableGlueSticks(unlockedContent(['konami'])).map((s) => s.id)).toContain('gold');
+  });
+
+  it('reveals the velvet pad once the velvet egg is found', () => {
+    expect(playableSurfaces(unlockedContent([])).map((s) => s.id)).not.toContain('velvet');
+    expect(playableSurfaces(unlockedContent(['velvet'])).map((s) => s.id)).toContain('velvet');
+  });
+
+  it('ignores eggs that unlock nothing', () => {
+    expect(unlockedContent(['moon', 'credits', 'patience'])).toEqual([]);
   });
 });
 
