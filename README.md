@@ -19,7 +19,7 @@ npm install
 npm run dev        # http://localhost:5173
 npm run build      # type-check + production bundle in dist/
 npm run preview    # serve the production build
-npm test           # 129 tests, including the real physics engine
+npm test           # 162 tests, including the real physics engine
 npm run typecheck
 npm run smoke      # imports every module: catches bad imports / load-time throws
 ```
@@ -170,9 +170,22 @@ ambience) so there are no asset files to ship.
 
 ## Settings, accessibility, performance
 
-The settings menu (saved locally) covers master/SFX/ambience volume, graphics
-quality, camera and throw sensitivity, invert-Y, haptics, the throw guide and
-screen shake.
+The settings menu (saved locally) covers interface language, master/SFX/ambience
+volume, graphics quality, camera and throw sensitivity, invert-Y, haptics, the
+throw guide and screen shake.
+
+**Languages** — the interface ships in French and English. The first run picks the
+browser language; the picker in Settings switches it live, every screen rebuilds
+itself in place, and the choice is stored in the save. `src/ui/i18n.ts` holds both
+dictionaries, with English as the source of truth: `FR` is typed
+`Record<keyof typeof EN, string>`, so a missing translation is a build error, and
+`tests/i18n.test.ts` additionally pins runtime parity plus a translated name for
+every stick, surface and challenge.
+
+**Chaining throws** — the menu is deliberately one big action (Play) with three
+secondary ones, and after every landing the stick resets itself in 0.85 s
+(`FEEDBACK.chainResetTime`) with a "press R" hint, so a session can be a continuous
+run of flicks instead of a click per throw.
 
 Accessibility, in its own section:
 
@@ -205,13 +218,26 @@ tests/
   helpers/         real Rapier world + desk + one stick; gesture sample generator
   physics.test.ts  19 integration tests on the real simulation
   throwGesture.test.ts, landingEvaluator.test.ts, scoreSystem.test.ts,
-  progression.test.ts, save.test.ts, smoke.test.ts
+  progression.test.ts, save.test.ts, smoke.test.ts,
+  i18n.test.ts (translation parity), easterEggs.test.ts (secret triggers)
 ```
 
 Rapier's WASM build runs in Node, so the physics tests exercise the shipped
 simulation rather than a model of it: mass and centre of mass per variant, collider
 shape, determinism, no tunnelling, settle behaviour, contact events, raycasts, the
 landing-window sweep and the difficulty gradient.
+
+## Easter eggs
+
+Eight secrets are hidden in the game — a Konami code, a magic word, a low-gravity
+mode, two unlockable pieces of hidden content (a golden stick, a velvet surface), a
+patience assist, a lost-and-found comment, a late-night message and a credits card.
+Five of them are written to the save and stay unlocked forever.
+
+**[EASTER_EGGS.md](EASTER_EGGS.md)** lists every one of them with its exact trigger,
+its effect and whether it persists. The triggers live in
+`src/gameplay/EasterEggSystem.ts`, which is pure and fully unit-tested
+(`tests/easterEggs.test.ts`), so the secrets cannot silently stop working.
 
 ## Notes and limitations
 

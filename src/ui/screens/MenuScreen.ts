@@ -1,16 +1,23 @@
-import { GLUE_STICKS } from '@/config/glueSticks';
+import { playableGlueSticks } from '@/config/glueSticks';
+import type { GlueStickVariant } from '@/config/glueSticks';
 import type { SaveData } from '@/core/SaveManager';
 import { Screen } from '@/ui/Screen';
+import { t, tOr } from '@/ui/i18n';
 import { el } from '@/utils/dom';
 import type { UiCallbacks } from '@/ui/UIManager';
 
 /**
- * Main menu. Rendered over the live 3D desk so the backdrop keeps breathing
- * (slow camera drift, dust, daylight) while the player reads.
+ * Main menu, rendered over the live 3D desk.
+ *
+ * Deliberately spare: one dominant action, three secondary ones and a single
+ * stick selector that cycles on click. Everything else lives in Settings, so the
+ * player can go from boot to first throw in one click.
  */
 export class MenuScreen extends Screen {
   private stats: { score: HTMLElement; combo: HTMLElement; perfects: HTMLElement };
-  private chips: HTMLElement[] = [];
+  private stickChip!: HTMLElement;
+  private stickName!: HTMLElement;
+  private stickMeta!: HTMLElement;
   private save: SaveData;
   private callbacks: UiCallbacks;
 
@@ -24,53 +31,63 @@ export class MenuScreen extends Screen {
     const perfects = el('span', { class: 'gf-stat__value', text: '0' });
     this.stats = { score, combo, perfects };
 
-    const actions = el('div', { class: 'gf-menu__actions' }, [
-      this.button('Play', true, () => this.callbacks.onPlay()),
-      this.button('Challenges', false, () => this.callbacks.onChallenges()),
-      this.button('Open Mode', false, () => this.callbacks.onOpenMode()),
-      this.button('Settings', false, () => this.callbacks.onSettings()),
-    ]);
+    this.build();
+    this.refresh();
+  }
 
-    const sticks = el('div', { class: 'gf-sticks' });
-    for (const variant of GLUE_STICKS) {
-      const chip = el('button', { class: 'gf-stick-chip', type: 'button' }, [
-        el('span', { class: 'gf-stick-chip__name', text: variant.name }),
-        el('span', {
-          class: 'gf-stick-chip__meta',
-          text: `${Math.round(variant.mass * 1000)} g · ${'★'.repeat(variant.difficulty)}`,
-        }),
-      ]);
-      chip.title = variant.tagline;
-      chip.addEventListener('click', () => {
-        this.callbacks.onSelectStick(variant.id);
-        this.markSelected(variant.id);
-      });
-      chip.addEventListener('mouseenter', () => this.callbacks.onHover());
-      this.chips.push(chip);
-      sticks.append(chip);
-    }
-    this.markSelected(save.selectedGlueStick);
+  /** Builds (or rebuilds, on a language change) the whole menu. */
+  private build(): void {
+    this.stickName = el('span', { class: 'gf-stick-chip__name', text: '' });
+    this.stickMeta = el('span', { class: 'gf-stick-chip__meta', text: '' });
+    this.stickChip = el('button', { class: 'gf-stick-chip', type: 'button' }, [
+      el('span', { class: 'gf-eyebrow', text: t('menu.stick') }),
+      this.stickName,
+      this.stickMeta,
+    ]);
+    this.stickChip.title = t('menu.stickHint');
+    this.stickChip.addEventListener('click', () => this.cycleStick());
+    this.stickChip.addEventListener('mouseenter', () => this.callbacks.onHover());
+
+    // The title doubles as an easter egg trigger (see EASTER_EGGS.md).
+    const title = el('h1', { class: 'gf-title gf-title--clickable', text: t('menu.title') });
+    title.addEventListener('click', () => this.callbacks.onTitleClick());
 
     const inner = el('div', { class: 'gf-menu__inner' }, [
       el('div', { class: 'gf-menu__brand' }, [
-        el('span', { class: 'gf-eyebrow', text: 'A physics toy' }),
-        el('h1', { class: 'gf-title', text: 'Glue Flip' }),
-        el('p', { class: 'gf-menu__tagline', text: 'Master the perfect landing.' }),
+        el('span', { class: 'gf-eyebrow', text: t('menu.eyebrow') }),
+        title,
+        el('p', { class: 'gf-menu__tagline', text: t('menu.tagline') }),
       ]),
-      actions,
-      el('div', { class: 'gf-menu__brand' }, [
-        el('span', { class: 'gf-eyebrow', text: 'Your stick' }),
-        sticks,
+      el('div', { class: 'gf-menu__actions' }, [
+        this.button(t('menu.play'), true, () => this.callbacks.onPlay()),
+        el('div', { class: 'gf-menu__secondary' }, [
+          this.button(t('menu.challenges'), false, () => this.callbacks.onChallenges()),
+          this.button(t('menu.openMode'), false, () => this.callbacks.onOpenMode()),
+          this.button(t('menu.settings'), false, () => this.callbacks.onSettings()),
+        ]),
       ]),
+      this.stickChip,
       el('div', { class: 'gf-menu__footer' }, [
-        this.stat('Best score', score),
-        this.stat('Best combo', combo),
-        this.stat('Perfect landings', perfects),
+        this.stat(t('menu.bestScore'), this.stats.score),
+        this.stat(t('menu.bestCombo'), this.stats.combo),
+        this.stat(t('menu.perfects'), this.stats.perfects),
       ]),
     ]);
 
-    this.element.append(inner);
+    this.element.replaceChildren(inner);
+  }
+
+  protected override onRebuild(): void {
+    this.build();
     this.refresh();
+  }
+
+  private cycleStick(): void {
+    const available = playableGlueSticks(this.save.easterEggs);
+    const index = available.findIndex((stick) => stick.id === this.save.selectedGlueStick);
+    const next = available[(index + 1) % available.length] ?? available[0];
+    this.callbacks.onSelectStick(next.id);
+    this.callbacks.onHover();
   }
 
   private button(label: string, primary: boolean, onClick: () => void): HTMLElement {
@@ -91,19 +108,25 @@ export class MenuScreen extends Screen {
     ]);
   }
 
-  private markSelected(id: string): void {
-    GLUE_STICKS.forEach((variant, index) => {
-      this.chips[index]?.classList.toggle('is-selected', variant.id === id);
-    });
-  }
-
   /** Called whenever the save changes (or the menu is re-opened). */
   refresh(save?: SaveData): void {
     if (save) this.save = save;
     this.stats.score.textContent = String(this.save.best.classic.score);
     this.stats.combo.textContent = String(this.save.best.classic.combo);
     this.stats.perfects.textContent = String(this.save.stats.perfects);
-    this.markSelected(this.save.selectedGlueStick);
+
+    const selected = this.selectedStick();
+    this.stickName.textContent = tOr(`stick.${selected.id}.name`, selected.name);
+    this.stickMeta.textContent =
+      `${Math.round(selected.mass * 1000)} g · ${'★'.repeat(selected.difficulty)}`;
+    this.stickChip.title = tOr(`stick.${selected.id}.tagline`, selected.tagline);
+  }
+
+  private selectedStick(): GlueStickVariant {
+    const available = playableGlueSticks(this.save.easterEggs);
+    return (
+      available.find((stick) => stick.id === this.save.selectedGlueStick) ?? available[0]
+    );
   }
 
   protected override onShow(): void {

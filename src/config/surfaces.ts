@@ -24,6 +24,8 @@ export interface SurfacePreset {
   };
   /** Difficulty hint (1 = easy). */
   difficulty: 1 | 2 | 3 | 4;
+  /** Hidden until the matching easter egg is found (see EASTER_EGGS.md). */
+  secret?: boolean;
 }
 
 export const SURFACES: SurfacePreset[] = [
@@ -97,7 +99,23 @@ export const SURFACES: SurfacePreset[] = [
     look: { color: 0xf2efe6, roughness: 0.86, metalness: 0, texture: 'paper', tint: 1 },
     difficulty: 2,
   },
+  {
+    id: 'velvet',
+    name: 'Velvet',
+    description: 'A gift box lining. Enormous grip, no bounce at all.',
+    friction: 1.4,
+    restitution: 0.03,
+    audio: 'rubber',
+    look: { color: 0x3b2340, roughness: 0.94, metalness: 0, texture: 'rubber', tint: 0.5 },
+    difficulty: 1,
+    secret: true,
+  },
 ];
+
+/** Surfaces the player may pick: everything except unreleased secrets. */
+export function playableSurfaces(unlocked: string[] = []): SurfacePreset[] {
+  return SURFACES.filter((surface) => !surface.secret || unlocked.includes(surface.id));
+}
 
 export const DEFAULT_SURFACE = SURFACES[0];
 

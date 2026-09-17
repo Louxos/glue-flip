@@ -1,4 +1,5 @@
 import type { Settings, SaveManager } from '@/core/SaveManager';
+import { setLanguage, t } from '@/ui/i18n';
 import type { LandingResult } from '@/gameplay/LandingEvaluator';
 import type { ScoreBreakdown } from '@/gameplay/ScoreSystem';
 import type { HudState } from '@/gameplay/modes';
@@ -35,6 +36,8 @@ export interface UiCallbacks {
   onSettingChange: <K extends keyof Settings>(key: K, value: Settings[K]) => void;
   onResetProgress: () => void;
   onHover: () => void;
+  /** The menu title was clicked (an easter egg counts them). */
+  onTitleClick: () => void;
 }
 
 type ScreenName = 'menu' | 'hud' | 'pause' | 'settings' | 'challenges' | 'result';
@@ -65,6 +68,7 @@ export class UIManager {
     this.callbacks = callbacks;
 
     this.root.classList.add('gf-ui');
+    setLanguage(save.settings.language);
 
     this.menu = new MenuScreen(save.all, callbacks);
     this.hud = new HudScreen(callbacks);
@@ -257,6 +261,18 @@ export class UIManager {
 
   refreshSave(): void {
     this.menu.refresh(this.save.all);
+    this.challenges.refresh(this.save.all);
+    this.settings.refresh(this.save.settings);
+  }
+
+  /**
+   * Switches the interface language and rebuilds every screen in place, so the
+   * change is visible immediately — including on the screen that triggered it.
+   */
+  applyLanguage(language: Settings['language']): void {
+    setLanguage(language);
+    for (const screen of this.allScreens()) screen.rebuild();
+    this.refreshSave();
   }
 
   /**

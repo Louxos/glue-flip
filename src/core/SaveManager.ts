@@ -1,4 +1,6 @@
 import { STORAGE_KEYS } from '@/config/gameplay';
+import { detectLanguage } from '@/utils/platform';
+import type { Language } from '@/ui/i18n';
 import type { QualityLevel } from '@/config/quality';
 import { createLogger } from '@/utils/logger';
 
@@ -25,6 +27,8 @@ export interface Settings {
   highContrast: boolean;
   /** UI text size multiplier (0.9 – 1.25). */
   textScale: number;
+  /** Interface language. Defaults to the browser language on first run. */
+  language: Language;
 }
 
 export interface ModeRecord {
@@ -56,6 +60,8 @@ export interface SaveData {
     perfects: number;
     playTimeMs: number;
   };
+  /** Ids of the easter eggs the player has found (see EASTER_EGGS.md). */
+  easterEggs: string[];
 }
 
 export const SAVE_VERSION = 1;
@@ -76,6 +82,7 @@ export const DEFAULT_SETTINGS: Settings = {
   haptics: true,
   highContrast: false,
   textScale: 1,
+  language: detectLanguage(),
 };
 
 export function defaultSave(): SaveData {
@@ -90,6 +97,7 @@ export function defaultSave(): SaveData {
     selectedGlueStick: 'classic',
     lastMode: 'menu',
     stats: { throws: 0, landings: 0, perfects: 0, playTimeMs: 0 },
+    easterEggs: [],
   };
 }
 
@@ -194,6 +202,19 @@ export class SaveManager {
     return this.data;
   }
 
+  /** Records an easter egg as found. Returns false when it was already known. */
+  addEasterEgg(id: string): boolean {
+    if (this.data.easterEggs.includes(id)) return false;
+    this.data.easterEggs.push(id);
+    this.persist();
+    log.info('easter egg recorded', id);
+    return true;
+  }
+
+  hasEasterEgg(id: string): boolean {
+    return this.data.easterEggs.includes(id);
+  }
+
   recordThrow(): void {
     this.data.stats.throws += 1;
     this.dirty = true;
@@ -240,8 +261,9 @@ export function mergeSave(base: SaveData, patch: Partial<SaveData>): SaveData {
       classic: { ...base.best.classic, ...(patch.best?.classic ?? {}) },
       open: { ...base.best.open, ...(patch.best?.open ?? {}) },
     },
-    challenges: { ...(patch.challenges ?? {}) },
+    challenges: { ...base.challenges, ...(patch.challenges ?? {}) },
     stats: { ...base.stats, ...(patch.stats ?? {}) },
+    easterEggs: Array.from(new Set(patch.easterEggs ?? base.easterEggs ?? [])),
   };
   // Clamp numeric settings in case a hand-edited file went out of range.
   merged.settings.masterVolume = clamp01(merged.settings.masterVolume);
@@ -251,6 +273,9 @@ export function mergeSave(base: SaveData, patch: Partial<SaveData>): SaveData {
   merged.settings.throwSensitivity = clampRange(merged.settings.throwSensitivity, 0.2, 3);
   merged.settings.textScale = clampRange(merged.settings.textScale, 0.9, 1.25);
   merged.settings.highContrast = Boolean(merged.settings.highContrast);
+  if (merged.settings.language !== 'en' && merged.settings.language !== 'fr') {
+    merged.settings.language = 'en';
+  }
   return merged;
 }
 

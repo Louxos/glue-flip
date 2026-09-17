@@ -14,6 +14,7 @@ export class ResultScreen extends Screen {
   private noteNode: HTMLElement;
   private summaryNode: HTMLElement;
   private footerNode: HTMLElement;
+  private last: ResultConfig | null = null;
 
   constructor() {
     super('gf-overlay');
@@ -30,7 +31,19 @@ export class ResultScreen extends Screen {
     this.element.append(card);
   }
 
+  /** Re-renders the card after a language change. */
+  protected override onRebuild(): void {
+    if (!this.last) return;
+    this.render(this.last);
+  }
+
   present(config: ResultConfig): void {
+    this.last = config;
+    this.render(config);
+    this.show();
+  }
+
+  private render(config: ResultConfig): void {
     this.titleNode.textContent = config.title;
     this.noteNode.textContent = config.note ?? '';
     this.noteNode.style.display = config.note ? '' : 'none';
@@ -55,7 +68,5 @@ export class ResultScreen extends Screen {
         return node;
       }),
     );
-
-    this.show();
   }
 }

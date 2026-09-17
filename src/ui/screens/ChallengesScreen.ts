@@ -2,6 +2,7 @@ import { CHALLENGES } from '@/config/challenges';
 import { getSurface } from '@/config/surfaces';
 import type { SaveData } from '@/core/SaveManager';
 import { Screen } from '@/ui/Screen';
+import { t, tOr } from '@/ui/i18n';
 import { el } from '@/utils/dom';
 import type { UiCallbacks } from '@/ui/UIManager';
 
@@ -16,19 +17,26 @@ export class ChallengesScreen extends Screen {
     this.save = save;
     this.callbacks = callbacks;
     this.list = el('div', { class: 'gf-challenges' });
+    this.buildCard();
+    this.build();
+  }
 
+  private buildCard(): void {
     const card = el('div', { class: 'gf-card gf-panel' }, [
       el('div', { class: 'gf-card__header' }, [
         el('div', {}, [
-          el('h2', { class: 'gf-card__title', text: 'Challenges' }),
-          el('p', { class: 'gf-hint', text: 'Each one is a different surface, distance or obstacle.' }),
+          el('h2', { class: 'gf-card__title', text: t('challenges.title') }),
+          el('p', { class: 'gf-hint', text: t('challenges.subtitle') }),
         ]),
-        this.backButton(callbacks),
+        this.backButton(this.callbacks),
       ]),
       el('div', { class: 'gf-card__body' }, [this.list]),
     ]);
+    this.element.replaceChildren(card);
+  }
 
-    this.element.append(card);
+  protected override onRebuild(): void {
+    this.buildCard();
     this.build();
   }
 
@@ -36,7 +44,7 @@ export class ChallengesScreen extends Screen {
     const button = el('button', {
       class: 'gf-icon-button',
       type: 'button',
-      'aria-label': 'Back',
+      'aria-label': t('challenges.back'),
       html:
         '<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">' +
         '<path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.6" fill="none" ' +
@@ -52,7 +60,9 @@ export class ChallengesScreen extends Screen {
       const record = this.save.challenges[challenge.id];
       const status = el('span', {
         class: `gf-challenge__status${record?.completed ? ' is-done' : ''}`,
-        text: record?.completed ? 'Done' : `${getSurface(challenge.surfaceId).name}`,
+        text: record?.completed
+          ? t('challenges.done')
+          : tOr(`surface.${challenge.surfaceId}.name`, getSurface(challenge.surfaceId).name),
       });
 
       const dots = el('span', { class: 'gf-difficulty' });
@@ -63,8 +73,14 @@ export class ChallengesScreen extends Screen {
       const button = el('button', { class: 'gf-challenge', type: 'button' }, [
         el('span', { class: 'gf-challenge__index', text: String(index + 1).padStart(2, '0') }),
         el('div', { class: 'gf-challenge__body' }, [
-          el('span', { class: 'gf-challenge__name', text: challenge.name }),
-          el('span', { class: 'gf-challenge__brief', text: challenge.brief }),
+          el('span', {
+            class: 'gf-challenge__name',
+            text: tOr(`challenge.${challenge.id}.name`, challenge.name),
+          }),
+          el('span', {
+            class: 'gf-challenge__brief',
+            text: tOr(`challenge.${challenge.id}.brief`, challenge.brief),
+          }),
         ]),
         status,
         dots,

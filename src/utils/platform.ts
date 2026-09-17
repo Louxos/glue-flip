@@ -28,6 +28,19 @@ export function isPortrait(): boolean {
   return window.innerHeight >= window.innerWidth;
 }
 
+/** Best guess at the player's language from the browser (falls back to 'en'). */
+export function detectLanguage(): 'en' | 'fr' {
+  if (!isBrowser()) return 'en';
+  const candidates = [
+    ...((globalThis.navigator as Navigator | undefined)?.languages ?? []),
+    (globalThis.navigator as Navigator | undefined)?.language ?? '',
+  ];
+  for (const candidate of candidates) {
+    if (typeof candidate === 'string' && candidate.toLowerCase().startsWith('fr')) return 'fr';
+  }
+  return 'en';
+}
+
 export function prefersReducedMotion(): boolean {
   if (!isBrowser()) return false;
   return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;

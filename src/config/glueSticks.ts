@@ -51,6 +51,8 @@ export interface GlueStickVariant {
   };
   /** Difficulty hint shown in the selector (1 = forgiving). */
   difficulty: 1 | 2 | 3;
+  /** Hidden until the matching easter egg is found (see EASTER_EGGS.md). */
+  secret?: boolean;
 }
 
 export const GLUE_STICKS: GlueStickVariant[] = [
@@ -158,7 +160,39 @@ export const GLUE_STICKS: GlueStickVariant[] = [
       ridges: 16,
     },
   },
+  {
+    id: 'gold',
+    name: 'Golden Glue',
+    tagline: 'Not a real product. Lands like a rumour.',
+    height: 0.084,
+    radius: 0.023,
+    capHeight: 0.026,
+    baseHeight: 0.02,
+    mass: 0.052,
+    comRatio: 0.34,
+    friction: 0.6,
+    restitution: 0.12,
+    difficulty: 3,
+    secret: true,
+    look: {
+      bodyColor: 0xd8b25c,
+      bodyRoughness: 0.18,
+      capColor: 0x8a6a24,
+      baseColor: 0x2a2118,
+      labelPrimary: '#8a6a24',
+      labelSecondary: '#f6e7bd',
+      labelText: 'GLUE',
+      labelSubText: 'OR  52 g',
+      clearcoat: 1,
+      ridges: 18,
+    },
+  },
 ];
+
+/** Sticks the player may pick: everything except unreleased secrets. */
+export function playableGlueSticks(unlocked: string[] = []): GlueStickVariant[] {
+  return GLUE_STICKS.filter((stick) => !stick.secret || unlocked.includes(stick.id));
+}
 
 export const DEFAULT_GLUE_STICK = GLUE_STICKS[0];
 

@@ -39,8 +39,10 @@ export interface LandingResult {
   precision: number;
   baseDown: boolean;
   insideZone: boolean;
-  /** Human readable reason, surfaced in the UI and the debug overlay. */
+  /** Human readable reason (English default, used by the debug overlay). */
   reason: string;
+  /** Stable id for the reason, so the UI can translate it. */
+  reasonKey: string;
   /** Points multiplier hint: how "clean" the landing looked. */
   cleanliness: number;
 }
@@ -57,7 +59,7 @@ export function evaluateLanding(
   const baseDown =
     verticalSpan > input.stickHeight * 0.45 && baseGap <= thresholds.baseContactTolerance;
 
-  const base: Omit<LandingResult, 'status' | 'reason'> = {
+  const base: Omit<LandingResult, 'status' | 'reason' | 'reasonKey'> = {
     tiltDeg: tilt,
     precision: clamp(1 - tilt / thresholds.standTiltDeg, 0, 1),
     baseDown,
@@ -66,11 +68,23 @@ export function evaluateLanding(
   };
 
   if (input.outOfBounds) {
-    return { ...base, status: 'lost', precision: 0, reason: 'Lost the stick' };
+    return {
+      ...base,
+      status: 'lost',
+      precision: 0,
+      reason: 'Lost the stick',
+      reasonKey: 'lost',
+    };
   }
 
   if (input.flightTime < thresholds.minFlightTime) {
-    return { ...base, status: 'failed', precision: 0, reason: 'Barely left the hand' };
+    return {
+      ...base,
+      status: 'failed',
+      precision: 0,
+      reason: 'Barely left the hand',
+      reasonKey: 'tooWeak',
+    };
   }
 
   if (!baseDown) {
@@ -80,15 +94,21 @@ export function evaluateLanding(
       status: 'failed',
       precision: 0,
       reason: onCap ? 'Landed on the cap' : 'Never touched down on its base',
+      reasonKey: onCap ? 'onCap' : 'notBase',
     };
   }
 
   if (tilt > thresholds.standTiltDeg) {
-    return { ...base, status: 'failed', reason: 'Toppled over' };
+    return { ...base, status: 'failed', reason: 'Toppled over', reasonKey: 'toppled' };
   }
 
   if (input.zoneRequired && !input.insideZone) {
-    return { ...base, status: 'failed', reason: 'Outside the zone' };
+    return {
+      ...base,
+      status: 'failed',
+      reason: 'Outside the zone',
+      reasonKey: 'outside',
+    };
   }
 
   const perfect = tilt <= thresholds.perfectTiltDeg;
@@ -102,6 +122,7 @@ export function evaluateLanding(
     ...base,
     status: perfect ? 'perfect' : 'landing',
     reason: perfect ? 'Dead vertical' : 'Standing',
+    reasonKey: perfect ? 'vertical' : 'standing',
     cleanliness,
   };
 }

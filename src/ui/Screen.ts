@@ -51,6 +51,19 @@ export abstract class Screen {
     /* override */
   }
 
+  /**
+   * Re-creates the screen content. Called when the interface language changes,
+   * so every screen can rebuild its labels in place without losing its state.
+   */
+  rebuild(): void {
+    this.onRebuild();
+    if (this.visible) this.focusFirst();
+  }
+
+  protected onRebuild(): void {
+    /* override */
+  }
+
   dispose(): void {
     this.element.remove();
   }

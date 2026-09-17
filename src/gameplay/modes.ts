@@ -1,6 +1,8 @@
 import type { ChallengeDef } from '@/config/challenges';
 import { WORLD } from '@/config/world';
-import { getSurface } from '@/config/surfaces';
+import { getSurface, playableSurfaces } from '@/config/surfaces';
+import { t, tOr } from '@/ui/i18n';
+import { playableGlueSticks } from '@/config/glueSticks';
 import type { LandingResult } from '@/gameplay/LandingEvaluator';
 import { ScoreBoard } from '@/gameplay/ScoreSystem';
 import { buildLevel, levelDifficulty } from '@/gameplay/ProgressionSystem';
@@ -167,7 +169,7 @@ export class ClassicMode implements GameMode {
       combo: this.board.combo,
       bestCombo: Math.max(this.board.bestCombo, best.combo),
       level: this.board.level,
-      objective: 'Land it upright',
+      objective: t('mode.objective.landUpright'),
       objectiveVisible: true,
       detail: this.spec.note,
       stats: {
@@ -312,10 +314,10 @@ export class ChallengeMode implements GameMode {
   hud(): HudState {
     const goalText =
       this.challenge.goal.type === 'combo'
-        ? `${this.challenge.goal.count} in a row`
-        : `${this.progress} / ${this.challenge.goal.count} ${
-            this.challenge.goal.type === 'perfects' ? 'perfect landings' : 'landings'
-          }`;
+        ? t('mode.goal.combo', { count: this.challenge.goal.count })
+        : this.challenge.goal.type === 'perfects'
+          ? t('mode.goal.perfects', { progress: this.progress, count: this.challenge.goal.count })
+          : t('mode.goal.landings', { progress: this.progress, count: this.challenge.goal.count });
     return {
       ...emptyHud,
       score: this.board.score,
@@ -327,7 +329,10 @@ export class ChallengeMode implements GameMode {
       objectiveVisible: true,
       attemptsLeft:
         this.challenge.attempts > 0 ? Math.max(0, this.challenge.attempts - this.attemptsUsed) : null,
-      detail: `${this.challenge.name} · ${getSurface(this.challenge.surfaceId).name}`,
+      detail: `${tOr(`challenge.${this.challenge.id}.name`, this.challenge.name)} · ${tOr(
+        `surface.${this.challenge.surfaceId}.name`,
+        getSurface(this.challenge.surfaceId).name,
+      )}`,
       levelVisible: false,
       stats: {
         throws: this.attemptsUsed,
@@ -344,7 +349,7 @@ export class ChallengeMode implements GameMode {
 
 export class OpenMode implements GameMode {
   readonly id = 'open' as const;
-  readonly label = 'Open Mode';
+  readonly label = 'Mode libre / Open';
 
   action: { label: string; run: () => void };
 
@@ -359,7 +364,7 @@ export class OpenMode implements GameMode {
   constructor(ctx: GameContext) {
     this.ctx = ctx;
     this.action = {
-      label: 'Change surface',
+      label: t('mode.changeSurface'),
       run: () => this.cycleSurface(),
     };
   }
@@ -380,7 +385,8 @@ export class OpenMode implements GameMode {
   }
 
   private apply(): void {
-    const surfaces = ['wood', 'walnut', 'rubber', 'stone', 'glass', 'metal', 'paper'];
+    // Unlocked easter-egg surfaces join the cycle automatically.
+    const surfaces = playableSurfaces(this.ctx.save.all.easterEggs).map((surface) => surface.id);
     const surfaceId = surfaces[this.surfaceIndex % surfaces.length];
     this.controller?.configure({
       surfaceId,
@@ -390,7 +396,12 @@ export class OpenMode implements GameMode {
       glueStickId: this.ctx.save.all.selectedGlueStick,
       showGuide: this.ctx.save.settings.showThrowGuide,
     });
-    this.ctx.events.emit('toast', { text: getSurface(surfaceId).name, tone: 'info' });
+    this.ctx.events.emit('toast', {
+      text: t('toast.surface', {
+        name: tOr(`surface.${surfaceId}.name`, getSurface(surfaceId).name),
+      }),
+      tone: 'info',
+    });
   }
 
   cycleSurface(): void {
@@ -400,7 +411,7 @@ export class OpenMode implements GameMode {
 
   cycleStick(): void {
     const save = this.ctx.save;
-    const ids = ['classic', 'jumbo', 'slim', 'purple'];
+    const ids = playableGlueSticks(save.all.easterEggs).map((stick) => stick.id);
     const index = (ids.indexOf(save.all.selectedGlueStick) + 1) % ids.length;
     save.update((data) => {
       data.selectedGlueStick = ids[index];
@@ -433,9 +444,11 @@ export class OpenMode implements GameMode {
       combo: 0,
       bestCombo: 0,
       level: 1,
-      objective: 'Free practice',
+      objective: t('mode.objective.free'),
       objectiveVisible: true,
-      detail: this.lastStatus ? `Last: ${this.lastStatus}` : 'Throw anywhere',
+      detail: this.lastStatus
+        ? t('mode.last', { reason: this.lastStatus })
+        : t('mode.objective.free'),
       scoreVisible: false,
       comboVisible: false,
       levelVisible: false,

@@ -386,7 +386,7 @@ export class GameController {
         break;
       case 'resolved':
         this.resolveTimer += rawDt;
-        if (this.autoReset && this.resolveTimer > FEEDBACK.resultHoldTime) this.prepare();
+        if (this.autoReset && this.resolveTimer > FEEDBACK.chainResetTime) this.prepare();
         break;
       case 'idle':
       case 'held':

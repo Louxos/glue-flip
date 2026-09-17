@@ -21,6 +21,11 @@ import type { GameEvents } from '@/gameplay/GameEvents';
 import { ClassicMode, ChallengeMode, OpenMode } from '@/gameplay/modes';
 import type { GameMode, HudState } from '@/gameplay/modes';
 import { UIManager } from '@/ui/UIManager';
+import { t, tOr } from '@/ui/i18n';
+import { EasterEggSystem } from '@/gameplay/EasterEggSystem';
+import { persistsEgg } from '@/config/easterEggs';
+import { PHYSICS } from '@/config/physics';
+import { FEEDBACK } from '@/config/gameplay';
 import { DebugOverlay } from '@/debug/DebugOverlay';
 import { prefersReducedMotion } from '@/utils/platform';
 import { createLogger } from '@/utils/logger';
@@ -73,6 +78,7 @@ export class GameApp {
   private director: CinematicDirector;
   private controller: GameController;
   private debug: DebugOverlay;
+  private eggs: EasterEggSystem;
 
   private mode: GameMode;
   private classicMode: ClassicMode;
@@ -104,6 +110,7 @@ export class GameApp {
     this.ui = systems.ui;
     this.save = systems.save;
 
+    this.eggs = new EasterEggSystem({ unlocked: this.save.all.easterEggs });
     this.classicMode = new ClassicMode(systems.context);
     this.openMode = new OpenMode(systems.context);
     this.mode = this.classicMode;
@@ -178,6 +185,7 @@ export class GameApp {
       onSettingChange: (key, value) => app?.onSettingChange(key, value),
       onResetProgress: () => app?.resetProgress(),
       onHover: () => app?.audio.uiHover(),
+      onTitleClick: () => app?.handleTitleClick(),
     });
 
     onProgress(0.94, 'Gameplay');
@@ -221,6 +229,7 @@ export class GameApp {
     this.engine.start((frame) => this.tick(frame));
     this.ui.showMenu();
     this.armAudio();
+    this.checkNightOwl();
     log.info('started');
   }
 
@@ -266,13 +275,13 @@ export class GameApp {
     this.mode = this.openMode;
     this.mode.start(this.controller);
     this.enterGame();
-    this.ui.toast('C: surface · V: stick', 'info');
+    this.ui.toast(t('hud.hint.open'), 'info');
   }
 
   startChallenge(id: string): void {
     const challenge = getChallenge(id);
     if (!challenge) {
-      this.ui.toast('Challenge unavailable', 'bad');
+      this.ui.toast(t('toast.challengeUnavailable'), 'bad');
       return;
     }
     this.challengeMode = new ChallengeMode(this.systems.context, challenge);
@@ -294,6 +303,7 @@ export class GameApp {
   toMenu(): void {
     this.paused = false;
     this.menuDrift = true;
+    this.checkNightOwl();
     this.engine.timeScale = 1;
     this.director.reset();
     this.rig.setFollow(null, 0);
@@ -335,7 +345,7 @@ export class GameApp {
 
   private summaryText(): string {
     const state = this.hudState ?? this.mode.hud();
-    return `Score ${state.score} · combo ${state.combo} · ${state.objective}`;
+    return `${t('result.score')} ${state.score} · ${t('hud.combo')} ${state.combo} · ${state.objective}`;
   }
 
   private openSettings(): void {
@@ -389,64 +399,81 @@ export class GameApp {
     this.events.on('landing:result', ({ result, breakdown }) => {
       this.ui.showLanding(result, breakdown);
       this.refreshHud(true);
+      this.feedThrow(result.status, result.status === 'lost');
+      // Chaining: tell the player the next throw is already loading.
+      if (this.controller.autoReset) {
+        window.setTimeout(() => {
+          if (!this.paused && this.ui.currentScreen === 'hud') {
+            this.ui.toast(t('hud.nextThrowHint'), 'info');
+          }
+        }, FEEDBACK.chainResetTime * 1000);
+      }
     });
 
     this.events.on('score:change', () => this.refreshHud(true));
-    this.events.on('level:change', ({ level, note }) => this.ui.toast(`Level ${level} · ${note}`, 'good'));
+    this.events.on('level:change', ({ level, note }) =>
+      this.ui.toast(t('toast.levelUp', { level, note }), 'good'),
+    );
     this.events.on('challenge:progress', ({ completed, total, attemptsLeft }) => {
       if (attemptsLeft >= 0 && attemptsLeft <= 3) {
-        this.ui.toast(`${attemptsLeft} throws left`, attemptsLeft === 1 ? 'bad' : 'info');
+        this.ui.toast(
+          t('toast.throwsLeft', { count: attemptsLeft }),
+          attemptsLeft === 1 ? 'bad' : 'info',
+        );
       } else {
-        this.ui.toast(`${completed} / ${total}`, 'info');
+        this.ui.toast(t('toast.challengeProgress', { completed, total }), 'info');
       }
     });
     this.events.on('challenge:complete', ({ rewardText, name }) => {
       const hud = this.mode.hud();
       this.ui.presentResult({
-        title: 'Challenge complete',
-        note: rewardText ?? `${name} cleared.`,
+        title: t('result.challengeComplete'),
+        note: rewardText ?? t('result.challengeCleared', { name }),
         summary: [
-          { label: 'Score', value: hud.score },
-          { label: 'Landings', value: hud.stats.landings },
-          { label: 'Perfect', value: hud.stats.perfects },
+          { label: t('result.score'), value: hud.score },
+          { label: t('result.landings'), value: hud.stats.landings },
+          { label: t('result.perfect'), value: hud.stats.perfects },
         ],
         buttons: [
-          { label: 'Menu', run: () => this.toMenu() },
-          { label: 'Retry', run: () => this.restart() },
-          { label: 'Next', primary: true, run: () => this.nextChallenge() },
+          { label: t('result.menu'), run: () => this.toMenu() },
+          { label: t('result.retry'), run: () => this.restart() },
+          { label: t('result.next'), primary: true, run: () => this.nextChallenge() },
         ],
       });
     });
     this.events.on('challenge:failed', ({ name }) => {
       const hud = this.mode.hud();
       this.ui.presentResult({
-        title: 'Out of throws',
-        note: `${name} needs another run.`,
+        title: t('result.outOfThrows'),
+        note: t('result.challengeAgain', { name }),
         summary: [
-          { label: 'Best', value: hud.bestScore },
-          { label: 'Landings', value: hud.stats.landings },
+          { label: t('result.best'), value: hud.bestScore },
+          { label: t('result.landings'), value: hud.stats.landings },
         ],
         buttons: [
-          { label: 'Menu', run: () => this.toMenu() },
-          { label: 'Retry', primary: true, run: () => this.restart() },
+          { label: t('result.menu'), run: () => this.toMenu() },
+          { label: t('result.retry'), primary: true, run: () => this.restart() },
         ],
       });
     });
     this.events.on('run:over', ({ score, bestCombo, landings, perfects, level }) => {
       const best = this.save.all.best.classic;
       this.ui.presentResult({
-        title: 'Run over',
-        note: score > 0 && score >= best.score ? 'New personal best.' : `Personal best: ${best.score}`,
+        title: t('result.runOver'),
+        note:
+          score > 0 && score >= best.score
+            ? t('result.newBest')
+            : t('result.personalBest', { score: best.score }),
         summary: [
-          { label: 'Score', value: score },
-          { label: 'Best combo', value: bestCombo },
-          { label: 'Landings', value: landings },
-          { label: 'Perfect', value: perfects },
-          { label: 'Level', value: level },
+          { label: t('result.score'), value: score },
+          { label: t('result.bestCombo'), value: bestCombo },
+          { label: t('result.landings'), value: landings },
+          { label: t('result.perfect'), value: perfects },
+          { label: t('result.level'), value: level },
         ],
         buttons: [
-          { label: 'Menu', run: () => this.toMenu() },
-          { label: 'Play again', primary: true, run: () => this.restart() },
+          { label: t('result.menu'), run: () => this.toMenu() },
+          { label: t('result.again'), primary: true, run: () => this.restart() },
         ],
       });
     });
@@ -461,8 +488,9 @@ export class GameApp {
   }
 
   private hintForMode(): string {
-    if (this.mode.id === 'open') return 'Drag the glue stick · C surface · V stick';
-    return 'Drag the glue stick and flick to throw';
+    if (this.mode.id === 'open') return t('hud.hint.open');
+    if (this.mode.id === 'challenge') return t('hud.hint.challenge');
+    return t('hud.hint.classic');
   }
 
   private refreshHud(force = false): void {
@@ -521,6 +549,7 @@ export class GameApp {
 
   private handleKey(event: KeyboardEvent): void {
     if (event.repeat) return;
+    this.feedKey(event);
     switch (event.code) {
       case 'Escape':
         event.preventDefault();
@@ -550,7 +579,7 @@ export class GameApp {
     const next = !this.save.settings.showDebug;
     this.save.setSetting('showDebug', next);
     this.debug.setEnabled(next);
-    this.ui.toast(next ? 'Debug on' : 'Debug off', 'info');
+    this.ui.toast(next ? t('toast.debugOn') : t('toast.debugOff'), 'info');
   }
 
   // --- Settings ----------------------------------------------------------
@@ -559,7 +588,8 @@ export class GameApp {
     this.save.setSetting(key, value);
     this.applySettings(this.save.settings);
     if (key === 'showThrowGuide') this.controller.configure(this.controller.currentSetup);
-    if (key === 'quality') this.ui.toast(`Quality: ${this.engine.quality}`, 'info');
+    if (key === 'quality') this.ui.toast(t('toast.quality', { quality: this.engine.quality }), 'info');
+    if (key === 'language') this.ui.applyLanguage(value as Settings['language']);
   }
 
   private applySettings(settings: Settings): void {
@@ -587,14 +617,97 @@ export class GameApp {
     });
     this.audio.uiClick();
     this.controller.configure(this.controller.currentSetup);
-    this.ui.toast('Stick updated', 'info');
+    this.ui.toast(t('toast.stickUpdated'), 'info');
   }
 
   private resetProgress(): void {
     this.save.reset();
     this.applySettings(this.save.settings);
     this.ui.refreshSave();
-    this.ui.toast('Progress reset', 'info');
+    this.ui.toast(t('toast.progressReset'), 'info');
+  }
+
+  // --- Easter eggs -------------------------------------------------------
+
+  /** Feeds a key press to the egg detector (Konami code, magic word, gravity). */
+  private feedKey(event: KeyboardEvent): void {
+    const now = performance.now() / 1000;
+    const found = this.eggs.feed({ type: 'key', code: event.code, time: now, mode: this.mode.id });
+    if (event.key.length === 1 && /[a-zA-Z]/.test(event.key)) {
+      found.push(...this.eggs.feed({ type: 'char', char: event.key }));
+    }
+    this.applyEggs(found);
+  }
+
+  /** Feeds a resolved throw (streaks, perfect count). */
+  private feedThrow(status: 'perfect' | 'landing' | 'failed' | 'lost', offDesk: boolean): void {
+    const found = this.eggs.feed({
+      type: 'throw',
+      status,
+      offDesk,
+      perfectsTotal: this.save.all.stats.perfects,
+    });
+    this.applyEggs(found);
+  }
+
+  /** Menu title clicks (credits egg). */
+  private handleTitleClick(): void {
+    this.audio.uiClick();
+    this.applyEggs(this.eggs.feed({ type: 'titleClick', time: performance.now() / 1000 }));
+  }
+
+  /** Applies whatever an egg just unlocked: saves, physics, UI. */
+  private applyEggs(ids: string[]): void {
+    if (ids.length === 0) return;
+    for (const id of ids) {
+      if (persistsEgg(id)) this.save.addEasterEgg(id);
+
+      switch (id) {
+        case 'moon':
+          this.physics.world.gravity.y = PHYSICS.gravity * this.eggs.gravityScale;
+          this.ui.toast(
+            this.eggs.gravityReduced ? t('egg.moonToast') : t('egg.moonOffToast'),
+            'good',
+          );
+          break;
+        case 'patience':
+          this.controller.zone.highlight(1);
+          this.ui.toast(t('egg.patienceToast'), 'good');
+          break;
+        case 'credits':
+          this.showCredits();
+          break;
+        default:
+          this.ui.toast(tOr(`egg.${id}Toast`, t('egg.unlocked')), 'good');
+          break;
+      }
+
+      // Newly unlocked sticks and surfaces must show up in the selectors.
+      if (id === 'konami' || id === 'velvet') {
+        this.ui.refreshSave();
+        this.controller.configure(this.controller.currentSetup);
+      }
+    }
+    log.info('easter eggs applied', ids);
+  }
+
+  private showCredits(): void {
+    this.ui.presentResult({
+      title: t('credits.title'),
+      note: t('credits.body'),
+      summary: [
+        { label: t('result.score'), value: this.save.all.best.classic.score },
+        { label: t('result.perfect'), value: this.save.all.stats.perfects },
+      ],
+      buttons: [
+        { label: t('credits.close'), primary: true, run: () => this.closeOverlay() },
+      ],
+    });
+  }
+
+  /** Late-night check, fed when the game boots and each time the menu opens. */
+  private checkNightOwl(): void {
+    this.applyEggs(this.eggs.feed({ type: 'hour', hour: new Date().getHours() }));
   }
 
   /** Unlocks the audio context on the first gesture (required by browsers). */

@@ -64,6 +64,11 @@ export const FEEDBACK = {
   confirmationDuration: 0.95,
   /** Duration of the result overlay before auto-dismiss (s). */
   resultHoldTime: 1.35,
+  /**
+   * How long the result stays on screen before the stick resets itself, so the
+   * player can chain throws without touching a button (s).
+   */
+  chainResetTime: 0.85,
   /** Screen shake strength for a perfect landing. */
   perfectShake: 0.011,
   landingShake: 0.006,
