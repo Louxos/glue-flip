@@ -93,6 +93,8 @@ export class GameApp {
   private hudState: HudState | null = null;
   private audioArmed = false;
   private chainHintShown = false;
+  /** End-of-run cards waiting out the flash delay. */
+  private pendingCards = new Set<number>();
   private disposed = false;
 
   private constructor(systems: AppSystems) {
@@ -293,6 +295,9 @@ export class GameApp {
   }
 
   private enterGame(): void {
+    // Every way into a run passes through here, so a stale end-of-run card can
+    // never survive into the next one.
+    this.cancelPendingCards();
     this.menuDrift = false;
     this.paused = false;
     this.engine.timeScale = 1;
@@ -303,6 +308,7 @@ export class GameApp {
   }
 
   toMenu(): void {
+    this.cancelPendingCards();
     this.paused = false;
     this.menuDrift = true;
     this.checkNightOwl();
@@ -642,10 +648,24 @@ export class GameApp {
    * Used to let the miss flash play before an opaque card covers the screen.
    */
   private later(run: () => void): void {
-    window.setTimeout(() => {
+    const timer = window.setTimeout(() => {
+      this.pendingCards.delete(timer);
       if (this.disposed) return;
       run();
     }, FEEDBACK.resultCardDelay * 1000);
+    this.pendingCards.add(timer);
+  }
+
+  /**
+   * Drops any end-of-run card still waiting.
+   *
+   * During the delay the card is not on screen yet, so the player can reach
+   * Restart through the pause menu — without this, a stale "run over" card would
+   * land on top of the fresh run.
+   */
+  private cancelPendingCards(): void {
+    for (const timer of this.pendingCards) window.clearTimeout(timer);
+    this.pendingCards.clear();
   }
 
   /**
@@ -809,6 +829,7 @@ export class GameApp {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
+    this.cancelPendingCards();
     this.engine.stop();
     this.input.dispose();
     this.controller.dispose();
