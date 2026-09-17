@@ -19,7 +19,7 @@ npm install
 npm run dev        # http://localhost:5173
 npm run build      # type-check + production bundle in dist/
 npm run preview    # serve the production build
-npm test           # 205 tests, including the real physics engine
+npm test           # 207 tests, including the real physics engine
 npm run typecheck
 npm run smoke      # imports every module: catches bad imports / load-time throws
 ```
@@ -235,7 +235,8 @@ tests/
   autoRestart.test.ts (reset timing, miss-flash rules),
   hudDom.test.ts (real DOM: flash, translated verdict, menu),
   lowGravity.test.ts (the Desk Moon egg, on the real physics engine),
-  autoResetContract.test.ts (when each mode stops restarting)
+  autoResetContract.test.ts (when each mode stops restarting),
+  moduleEval.test.ts (the whole module graph evaluates, not just compiles)
 ```
 
 Rapier's WASM build runs in Node, so the physics tests exercise the shipped
