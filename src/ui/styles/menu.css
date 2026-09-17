@@ -130,13 +130,7 @@
   color: var(--gf-text-dim);
 }
 
-/* Glue stick selector on the menu */
-.gf-sticks {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
+/* Glue stick selector on the menu (a single cycling chip) */
 .gf-stick-chip {
   display: flex;
   flex-direction: column;
@@ -218,10 +212,6 @@
   }
 
   .gf-menu__footer {
-    justify-content: center;
-  }
-
-  .gf-sticks {
     justify-content: center;
   }
 }

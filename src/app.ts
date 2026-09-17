@@ -23,7 +23,7 @@ import type { GameMode, HudState } from '@/gameplay/modes';
 import { UIManager } from '@/ui/UIManager';
 import { t, tOr } from '@/ui/i18n';
 import { EasterEggSystem } from '@/gameplay/EasterEggSystem';
-import { persistsEgg } from '@/config/easterEggs';
+import { EGG_UNLOCKS, persistsEgg } from '@/config/easterEggs';
 import { PHYSICS } from '@/config/physics';
 import { FEEDBACK } from '@/config/gameplay';
 import { DebugOverlay } from '@/debug/DebugOverlay';
@@ -700,6 +700,12 @@ export class GameApp {
         default:
           this.ui.toast(tOr(`egg.${id}Toast`, t('egg.unlocked')), 'good');
           break;
+      }
+
+      // A reward is useless if the player cannot find it: say where it went.
+      if (EGG_UNLOCKS[id]) {
+        const hint = tOr(`egg.${id}Hint`, '');
+        if (hint) this.ui.toast(hint, 'info');
       }
 
       // Newly unlocked sticks and surfaces must show up in the selectors.

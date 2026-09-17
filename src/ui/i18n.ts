@@ -39,19 +39,12 @@ const EN = {
   // --- HUD ---------------------------------------------------------------
   'hud.score': 'Score',
   'hud.combo': 'Combo',
-  'hud.best': 'Best',
-  'hud.level': 'Level',
   'hud.attempts': 'Throws left',
-  'hud.progress': 'Progress',
-  'hud.objective': 'Objective',
-  'hud.power': 'Power',
   'hud.rotations': 'turns',
   'hud.pause': 'Pause',
   'hud.hint.classic': 'Drag the stick and flick to throw',
   'hud.hint.challenge': 'Land inside the target zone',
   'hud.hint.open': 'Drag to throw · C surface · V stick',
-  'hud.nextThrow': 'Next throw',
-  'hud.retry': 'Retry',
   'hud.nextThrowHint': 'Press R for the next throw',
 
   // --- Verdicts ----------------------------------------------------------
@@ -90,22 +83,16 @@ const EN = {
   'result.landings': 'Landings',
   'result.perfect': 'Perfect',
   'result.level': 'Level',
-  'result.attempts': 'Throws',
   'result.menu': 'Menu',
   'result.retry': 'Retry',
   'result.next': 'Next',
   'result.again': 'Play again',
-  'result.back': 'Back',
-  'result.credits': 'Credits',
 
   // --- Challenges --------------------------------------------------------
   'challenges.title': 'Challenges',
   'challenges.subtitle': 'Short tests. Each one is a different desk problem.',
   'challenges.done': 'Cleared',
-  'challenges.best': 'Best',
-  'challenges.attempts': 'throws',
   'challenges.back': 'Back',
-  'challenges.objective': 'Objective',
 
   // --- Settings ----------------------------------------------------------
   'settings.title': 'Settings',
@@ -152,18 +139,13 @@ const EN = {
   'settings.resetDone': 'Progress reset',
 
   // --- Modes -------------------------------------------------------------
-  'mode.classic': 'Classic',
-  'mode.challenge': 'Challenge',
-  'mode.open': 'Open Mode',
   'mode.objective.landUpright': 'Land it upright',
-  'mode.objective.zone': 'Land inside the zone',
   'mode.objective.free': 'Throw wherever you like',
   'mode.goal.combo': '{count} in a row',
   'mode.goal.landings': '{progress} / {count} landings',
   'mode.goal.perfects': '{progress} / {count} perfect landings',
   'mode.last': 'Last: {reason}',
   'mode.changeSurface': 'Change surface',
-  'mode.changeStick': 'Change stick',
 
   // --- Toasts ------------------------------------------------------------
   'toast.levelUp': 'Level {level} · {note}',
@@ -176,7 +158,6 @@ const EN = {
   'toast.debugOn': 'Debug on',
   'toast.debugOff': 'Debug off',
   'toast.challengeUnavailable': 'Challenge unavailable',
-  'toast.language': 'Language: {language}',
 
   // --- Credits -----------------------------------------------------------
   'credits.title': 'Glue Flip',
@@ -187,29 +168,21 @@ const EN = {
 
   // --- Easter eggs -------------------------------------------------------
   'egg.unlocked': 'Secret found',
-  'egg.konami': 'Golden Glue',
   'egg.konamiToast': 'Secret stick unlocked: Golden Glue',
   'egg.konamiHint': 'A heavier stick with a low centre of mass. Find it in the menu.',
-  'egg.glueglue': 'G.L.U.E.',
   'egg.glueglueToast': 'You spelled the word',
   'egg.glueglueHint': 'It was always going to be GLUE.',
-  'egg.moon': 'Desk Moon',
   'egg.moonToast': 'Low gravity on',
   'egg.moonOffToast': 'Low gravity off',
   'egg.moonHint': 'Three G presses in Open Mode. The desk is the moon now.',
-  'egg.velvet': 'Velvet pad',
   'egg.velvetToast': 'Secret surface unlocked: Velvet',
   'egg.velvetHint': 'Ten perfect landings earned you a velvet pad. Find it in Open Mode (C).',
-  'egg.patience': 'Steady hands',
   'egg.patienceToast': 'Take your time — the zone is helping you',
   'egg.patienceHint': 'After ten misses the target zone glows to guide you.',
-  'egg.insomniac': 'Night shift',
   'egg.insomniacToast': 'Playing this late? The desk is quieter at night.',
   'egg.insomniacHint': 'Land a throw between midnight and 4 a.m.',
-  'egg.credits': 'Credits',
   'egg.creditsToast': 'Credits',
   'egg.creditsHint': 'Click the title seven times.',
-  'egg.lostfound': 'Lost and found',
   'egg.lostfoundToast': 'Five on the floor. The walls will catch it now.',
   'egg.lostfoundHint': 'Throw five sticks off the desk in a row.',
 
@@ -279,19 +252,12 @@ const FR: Record<TranslationKey, string> = {
   // --- HUD ---------------------------------------------------------------
   'hud.score': 'Score',
   'hud.combo': 'Combo',
-  'hud.best': 'Record',
-  'hud.level': 'Niveau',
   'hud.attempts': 'Lancers restants',
-  'hud.progress': 'Progression',
-  'hud.objective': 'Objectif',
-  'hud.power': 'Puissance',
   'hud.rotations': 'tours',
   'hud.pause': 'Pause',
   'hud.hint.classic': 'Faites glisser le bâton puis relâchez pour lancer',
   'hud.hint.challenge': 'Atterrissez dans la zone cible',
   'hud.hint.open': 'Glissez pour lancer · C surface · V bâton',
-  'hud.nextThrow': 'Lancer suivant',
-  'hud.retry': 'Rejouer',
   'hud.nextThrowHint': 'Touche R pour le lancer suivant',
 
   // --- Verdicts ----------------------------------------------------------
@@ -330,22 +296,16 @@ const FR: Record<TranslationKey, string> = {
   'result.landings': 'Atterrissages',
   'result.perfect': 'Parfaits',
   'result.level': 'Niveau',
-  'result.attempts': 'Lancers',
   'result.menu': 'Menu',
   'result.retry': 'Réessayer',
   'result.next': 'Suivant',
   'result.again': 'Rejouer',
-  'result.back': 'Retour',
-  'result.credits': 'Générique',
 
   // --- Challenges --------------------------------------------------------
   'challenges.title': 'Défis',
   'challenges.subtitle': 'De courts tests. Chacun est un problème de bureau différent.',
   'challenges.done': 'Réussi',
-  'challenges.best': 'Record',
-  'challenges.attempts': 'lancers',
   'challenges.back': 'Retour',
-  'challenges.objective': 'Objectif',
 
   // --- Settings ----------------------------------------------------------
   'settings.title': 'Réglages',
@@ -392,18 +352,13 @@ const FR: Record<TranslationKey, string> = {
   'settings.resetDone': 'Progression réinitialisée',
 
   // --- Modes -------------------------------------------------------------
-  'mode.classic': 'Classique',
-  'mode.challenge': 'Défi',
-  'mode.open': 'Mode libre',
   'mode.objective.landUpright': 'Faites-le tenir debout',
-  'mode.objective.zone': 'Atterrissez dans la zone',
   'mode.objective.free': 'Lancez où vous voulez',
   'mode.goal.combo': '{count} d’affilée',
   'mode.goal.landings': '{progress} / {count} atterrissages',
   'mode.goal.perfects': '{progress} / {count} atterrissages parfaits',
   'mode.last': 'Dernier : {reason}',
   'mode.changeSurface': 'Changer de surface',
-  'mode.changeStick': 'Changer de bâton',
 
   // --- Toasts ------------------------------------------------------------
   'toast.levelUp': 'Niveau {level} · {note}',
@@ -416,7 +371,6 @@ const FR: Record<TranslationKey, string> = {
   'toast.debugOn': 'Debug activé',
   'toast.debugOff': 'Debug désactivé',
   'toast.challengeUnavailable': 'Défi indisponible',
-  'toast.language': 'Langue : {language}',
 
   // --- Credits -----------------------------------------------------------
   'credits.title': 'Glue Flip',
@@ -427,29 +381,21 @@ const FR: Record<TranslationKey, string> = {
 
   // --- Easter eggs -------------------------------------------------------
   'egg.unlocked': 'Secret trouvé',
-  'egg.konami': 'Colle dorée',
   'egg.konamiToast': 'Bâton secret débloqué : Colle dorée',
   'egg.konamiHint': 'Un bâton plus lourd au centre de masse bas. Disponible dans le menu.',
-  'egg.glueglue': 'C.O.L.L.E.',
   'egg.glueglueToast': 'Vous avez épelé le mot',
   'egg.glueglueHint': 'C’était forcément GLUE.',
-  'egg.moon': 'Lune de bureau',
   'egg.moonToast': 'Gravité réduite activée',
   'egg.moonOffToast': 'Gravité réduite désactivée',
   'egg.moonHint': 'Trois appuis sur G en Mode libre. Le bureau est devenu la Lune.',
-  'egg.velvet': 'Velours',
   'egg.velvetToast': 'Surface secrète débloquée : Velours',
   'egg.velvetHint': 'Dix atterrissages parfaits vous offrent un tapis de velours (Mode libre, C).',
-  'egg.patience': 'Mains sûres',
   'egg.patienceToast': 'Prenez votre temps — la zone vous aide',
   'egg.patienceHint': 'Après dix échecs, la zone cible s’illumine pour vous guider.',
-  'egg.insomniac': 'Équipe de nuit',
   'egg.insomniacToast': 'Vous jouez tard ? Le bureau est plus calme la nuit.',
   'egg.insomniacHint': 'Réussissez un lancer entre minuit et 4 h du matin.',
-  'egg.credits': 'Générique',
   'egg.creditsToast': 'Générique',
   'egg.creditsHint': 'Cliquez sept fois sur le titre.',
-  'egg.lostfound': 'Objets trouvés',
   'egg.lostfoundToast': 'Cinq par terre. Les murs le rattrapent maintenant.',
   'egg.lostfoundHint': 'Envoyez cinq bâtons hors du bureau d’affilée.',
 
