@@ -641,7 +641,7 @@ export class GameApp {
     this.applyEggs(found);
   }
 
-  /** Feeds a resolved throw (streaks, perfect count). */
+  /** Feeds a resolved throw (streaks, perfect count, late-night check). */
   private feedThrow(status: 'perfect' | 'landing' | 'failed' | 'lost', offDesk: boolean): void {
     const found = this.eggs.feed({
       type: 'throw',
@@ -649,6 +649,11 @@ export class GameApp {
       offDesk,
       perfectsTotal: this.save.all.stats.perfects,
     });
+    // The night-shift egg is earned by *landing* one, so only a successful
+    // throw checks the clock.
+    if (status === 'perfect' || status === 'landing') {
+      found.push(...this.eggs.feed({ type: 'hour', hour: new Date().getHours() }));
+    }
     this.applyEggs(found);
   }
 
