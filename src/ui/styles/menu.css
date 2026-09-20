@@ -1,0 +1,217 @@
+/* ==========================================================================
+   Main menu
+   ========================================================================== */
+
+.gf-menu {
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding: clamp(24px, 6vw, 72px);
+  background: linear-gradient(
+    100deg,
+    rgba(6, 8, 11, 0.82) 0%,
+    rgba(6, 8, 11, 0.42) 42%,
+    rgba(6, 8, 11, 0) 72%
+  );
+}
+
+.gf-menu__inner {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(18px, 3.4vh, 34px);
+  max-width: 460px;
+  animation: gf-menu-in 620ms var(--gf-ease-out) both;
+}
+
+@keyframes gf-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.gf-menu__brand {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gf-menu__tagline {
+  font-size: calc(13px * var(--gf-text-scale));
+  font-style: italic;
+  letter-spacing: 0.08em;
+  color: var(--gf-text-muted);
+  margin: 0;
+}
+
+.gf-menu__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.gf-menu__actions .gf-button.is-primary {
+  width: 100%;
+  max-width: 260px;
+  text-align: center;
+  padding-block: 15px;
+  font-size: calc(15px * var(--gf-text-scale));
+  letter-spacing: 0.22em;
+}
+
+/* The three secondary actions sit on one row, quieter and smaller. */
+.gf-menu__secondary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.gf-menu__secondary .gf-button {
+  padding: 9px 14px;
+  font-size: calc(10px * var(--gf-text-scale));
+  letter-spacing: 0.18em;
+  color: var(--gf-text-muted);
+}
+
+/* The title doubles as an easter-egg target: clickable, but not shouty. */
+.gf-title--clickable {
+  cursor: pointer;
+  user-select: none;
+  transition: color 200ms var(--gf-ease);
+}
+
+.gf-title--clickable:active {
+  color: var(--gf-accent);
+}
+
+/* Single cycling stick selector (replaces the old chip row). */
+.gf-menu .gf-stick-chip {
+  align-self: flex-start;
+  min-width: 180px;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.gf-menu .gf-stick-chip .gf-eyebrow {
+  letter-spacing: 0.24em;
+  color: var(--gf-text-dim);
+}
+
+.gf-menu__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 22px;
+  padding-top: 8px;
+  border-top: 1px solid var(--gf-border);
+}
+
+.gf-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gf-stat__value {
+  font-size: calc(18px * var(--gf-text-scale));
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.gf-stat__label {
+  font-size: calc(9px * var(--gf-text-scale));
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--gf-text-dim);
+}
+
+/* Glue stick selector on the menu (a single cycling chip) */
+.gf-stick-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 9px 12px;
+  min-height: 44px;
+  border-radius: var(--gf-radius-sm);
+  border: 1px solid var(--gf-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--gf-text-muted);
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--gf-font);
+  transition: border-color 180ms var(--gf-ease), color 180ms var(--gf-ease),
+    background 180ms var(--gf-ease);
+}
+
+.gf-stick-chip:hover,
+.gf-stick-chip:focus-visible {
+  color: var(--gf-text);
+  border-color: var(--gf-border-strong);
+  outline: none;
+}
+
+.gf-stick-chip.is-selected {
+  color: var(--gf-text);
+  border-color: rgba(226, 167, 95, 0.5);
+  background: var(--gf-accent-soft);
+}
+
+.gf-stick-chip__name {
+  font-size: calc(12px * var(--gf-text-scale));
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
+.gf-stick-chip__meta {
+  font-size: calc(10px * var(--gf-text-scale));
+  color: var(--gf-text-dim);
+  letter-spacing: 0.06em;
+}
+
+@media (max-width: 720px), (max-height: 520px) {
+  .gf-menu {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: linear-gradient(
+      180deg,
+      rgba(6, 8, 11, 0.35) 0%,
+      rgba(6, 8, 11, 0.8) 60%,
+      rgba(6, 8, 11, 0.9) 100%
+    );
+  }
+
+  .gf-menu__inner {
+    align-items: center;
+    width: 100%;
+  }
+
+  .gf-menu__actions {
+    align-items: center;
+  }
+
+  .gf-menu__actions .gf-button {
+    max-width: 300px;
+    text-align: center;
+  }
+
+  .gf-menu__actions .gf-button::after {
+    left: 50%;
+    right: auto;
+    width: 42%;
+    transform: translateX(-50%) scaleX(0.2);
+  }
+
+  .gf-menu__actions .gf-button:hover::after {
+    transform: translateX(-50%) scaleX(1);
+  }
+
+  .gf-menu__footer {
+    justify-content: center;
+  }
+}

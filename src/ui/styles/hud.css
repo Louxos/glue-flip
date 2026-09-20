@@ -1,0 +1,380 @@
+/* ==========================================================================
+   In-game HUD — as invisible as possible
+   ========================================================================== */
+
+.gf-hud {
+  pointer-events: none;
+  display: block;
+}
+
+.gf-hud > * {
+  pointer-events: auto;
+}
+
+.gf-hud__top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: clamp(14px, 2.4vw, 26px);
+}
+
+.gf-hud__score {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 92px;
+}
+
+.gf-hud__score-value {
+  font-size: calc(clamp(26px, 4.4vw, 40px) * var(--gf-text-scale));
+  font-weight: 300;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  transition: transform 220ms var(--gf-ease-out), color 220ms var(--gf-ease);
+}
+
+.gf-hud__score-value.is-bump {
+  transform: scale(1.14);
+  color: var(--gf-accent);
+}
+
+.gf-hud__combo {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: calc(11px * var(--gf-text-scale));
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gf-text-dim);
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 240ms var(--gf-ease), transform 240ms var(--gf-ease);
+}
+
+.gf-hud__combo.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.gf-hud__combo-value {
+  font-size: calc(15px * var(--gf-text-scale));
+  font-weight: 600;
+  color: var(--gf-accent);
+  letter-spacing: 0.04em;
+}
+
+.gf-hud__center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+  flex: 1;
+  padding-top: 4px;
+}
+
+.gf-hud__objective {
+  font-size: calc(12px * var(--gf-text-scale));
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gf-text-muted);
+}
+
+.gf-hud__detail {
+  font-size: calc(10px * var(--gf-text-scale));
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gf-text-dim);
+}
+
+.gf-hud__right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gf-hud__attempts {
+  font-size: calc(11px * var(--gf-text-scale));
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gf-text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.gf-hud__bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  padding: clamp(14px, 2.4vw, 26px);
+}
+
+.gf-hud__hint {
+  font-size: calc(11px * var(--gf-text-scale));
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gf-text-dim);
+  opacity: 0.85;
+  transition: opacity 300ms var(--gf-ease);
+}
+
+.gf-hud__hint.is-hidden {
+  opacity: 0;
+}
+
+.gf-power {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 200ms var(--gf-ease), transform 200ms var(--gf-ease);
+}
+
+.gf-power.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.gf-power__bar {
+  width: clamp(110px, 22vw, 190px);
+  height: 3px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.gf-power__fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #d9d2c6, var(--gf-accent));
+  transition: width 90ms linear;
+}
+
+.gf-power__label {
+  font-size: calc(10px * var(--gf-text-scale));
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gf-text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Landing result flash */
+.gf-result {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.gf-result__title {
+  font-family: var(--gf-font-display);
+  font-size: calc(clamp(30px, 7vw, 62px) * var(--gf-text-scale));
+  font-weight: 200;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateY(10px) scale(0.98);
+  text-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+.gf-result__sub {
+  font-size: calc(11px * var(--gf-text-scale));
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--gf-text-muted);
+  opacity: 0;
+}
+
+.gf-result__points {
+  font-size: calc(13px * var(--gf-text-scale));
+  letter-spacing: 0.2em;
+  color: var(--gf-accent);
+  opacity: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.gf-result.is-show .gf-result__title {
+  animation: gf-result-title 1100ms var(--gf-ease-out) forwards;
+}
+
+.gf-result.is-show .gf-result__sub {
+  animation: gf-result-fade 1100ms var(--gf-ease-out) 60ms forwards;
+}
+
+.gf-result.is-show .gf-result__points {
+  animation: gf-result-fade 1100ms var(--gf-ease-out) 120ms forwards;
+}
+
+.gf-result.is-perfect .gf-result__title {
+  color: var(--gf-accent);
+}
+
+.gf-result.is-fail .gf-result__title {
+  color: var(--gf-text-muted);
+  font-size: calc(clamp(22px, 4.6vw, 38px) * var(--gf-text-scale));
+  letter-spacing: 0.24em;
+}
+
+@keyframes gf-result-title {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.96);
+  }
+  18% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  72% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-8px) scale(1.01);
+  }
+}
+
+@keyframes gf-result-fade {
+  0% {
+    opacity: 0;
+  }
+  22% {
+    opacity: 1;
+  }
+  74% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Toasts */
+.gf-toasts {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(64px, 12vh, 120px);
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.gf-toast {
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: rgba(12, 15, 19, 0.72);
+  border: 1px solid var(--gf-border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  font-size: calc(11px * var(--gf-text-scale));
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gf-text-muted);
+  animation: gf-toast-in 260ms var(--gf-ease-out) both;
+}
+
+.gf-toast.is-good {
+  color: var(--gf-good);
+  border-color: rgba(127, 209, 166, 0.3);
+}
+
+.gf-toast.is-bad {
+  color: var(--gf-bad);
+  border-color: rgba(217, 132, 119, 0.3);
+}
+
+.gf-toast.is-leaving {
+  opacity: 0;
+  transition: opacity 240ms var(--gf-ease);
+}
+
+@keyframes gf-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 720px) {
+  .gf-hud__center {
+    order: 3;
+    width: 100%;
+    position: absolute;
+    top: 62px;
+    left: 0;
+  }
+
+  .gf-hud__score-value {
+    font-size: calc(28px * var(--gf-text-scale));
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Miss flash
+   A red vignette that washes over the screen when a throw is missed outside
+   Open Mode, so the failure reads instantly before the stick resets itself.
+   -------------------------------------------------------------------------- */
+
+.gf-failflash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  --gf-failflash-opacity: 0.34;
+  --gf-failflash-duration: 900ms;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(150, 20, 24, 0) 42%,
+    rgba(150, 20, 24, 0.55) 78%,
+    rgba(120, 12, 16, 0.9) 100%
+  );
+}
+
+.gf-failflash.is-show {
+  animation: gf-failflash var(--gf-failflash-duration) var(--gf-ease-out) forwards;
+}
+
+@keyframes gf-failflash {
+  0% {
+    opacity: 0;
+  }
+  12% {
+    opacity: var(--gf-failflash-opacity);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* High contrast keeps the vignette legible without turning the screen solid. */
+[data-contrast='high'] .gf-failflash {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(190, 24, 28, 0) 38%,
+    rgba(190, 24, 28, 0.7) 76%,
+    rgba(150, 14, 18, 1) 100%
+  );
+}
