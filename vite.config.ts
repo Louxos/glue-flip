@@ -10,6 +10,10 @@ import { defineConfig } from 'vite';
  * - Rapier ships its WASM payload inlined, so no special asset handling is needed.
  */
 export default defineConfig({
+  // Relative base so the production build works both at a domain root and under
+  // a sub-path such as GitHub Pages' /<repo>/ — assets resolve relative to the
+  // page instead of assuming the site sits at "/".
+  base: './',
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
