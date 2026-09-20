@@ -1,7 +1,26 @@
-# Glue Flip
+<div align="center">
 
-A physics game about one object and one gesture: pick a glue stick off a desk, flick
-it so it turns once in the air, and land it perfectly upright on its base.
+<img src="docs/banner.jpg" alt="Glue Flip — a glue stick standing upright on a wooden desk beside a chalk landing target" width="100%" />
+
+#  GLUE FLIP
+
+### *Grab it. Flick it. Land it upright.*
+
+*A desk physics toy where one gesture is everything — and the simulation decides.*
+
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Tests](https://img.shields.io/badge/tests-207%20passing-brightgreen.svg)](#-tests)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6.svg)](#)
+[![three.js](https://img.shields.io/badge/three.js-r180-black.svg)](#)
+[![Rapier](https://img.shields.io/badge/physics-Rapier%20WASM-orange.svg)](#)
+[![Render](https://img.shields.io/badge/render-WebGL2-9cf.svg)](#)
+[![Languages](https://img.shields.io/badge/lang-FR%20%7C%20EN-blue.svg)](#settings-accessibility-performance)
+[![Backend](https://img.shields.io/badge/backend-none-lightgrey.svg)](#)
+
+</div>
+
+> 🎯 **The whole game in one sentence:** pick a glue stick off a desk, flick it so it
+> turns once in the air, and land it perfectly upright on its base.
 
 Everything that decides the outcome is simulated. The stick has a real mass
 distribution, a real inertia tensor, real friction and restitution against the
@@ -10,9 +29,22 @@ the landing tier is computed from the angle the stick really came to rest at. Th
 is no scripted animation of a "good" throw and no hidden aim assist — the same
 gesture produces the same flight, plus a few percent of hand noise.
 
+<div align="center">
+<img src="docs/screenshot.png" alt="Actual in-browser render of the Glue Flip main menu" width="72%" />
+
+*The menu, captured in a headless browser — no mockups.* 📸
+</div>
+
+<div align="center">
+<img src="docs/gameplay.png" alt="Actual in-game render: HUD, landing pad and the glue stick" width="72%" />
+
+*Mid-session: the HUD, the pad, and one stick that made it.* 🎯
+</div>
+
+
 ---
 
-## Running it
+## 🚀 Running it
 
 ```bash
 npm install
@@ -27,7 +59,7 @@ npm run smoke      # imports every module: catches bad imports / load-time throw
 Requirements: Node 18+ and a WebGL2 browser. No backend, no accounts — progress is
 stored in `localStorage`.
 
-## Controls
+## 🕹️ Controls
 
 | | Desktop | Touch |
 | --- | --- | --- |
@@ -44,7 +76,7 @@ least-squares line to get the release velocity. Flick harder to send it further,
 flick more upward to make it arc, and curve the pointer around the stick to add
 roll.
 
-## Modes
+## 🎮 Modes
 
 - **Classic** — streak, score and combo. Each level moves the target further away
   (0.30 → 0.95 m), shrinks the landing zone, and from level 6 adds obstacles; every
@@ -61,7 +93,7 @@ desk).
 
 ---
 
-## How the simulation works
+## 🧪 How the simulation works
 
 The interesting part of this project is not the rendering, so here is what actually
 happens between the flick and the result.
@@ -119,7 +151,7 @@ the resulting difficulty gradient: a comfortable flick lands ~8/8 times, the sam
 flick at the far end of the Classic range lands about half the time, and a slam
 never lands.
 
-## Configuration
+## ⚙️ Configuration
 
 Every constant lives in `src/config/`, typed and commented — nothing is hard-coded
 in gameplay code:
@@ -136,7 +168,7 @@ in gameplay code:
 | `quality.ts` | low/medium/high/ultra presets (DPR, shadow map, dust, env size, frame budget) |
 | `world.ts` | desk, floor, spawn, play area |
 
-## Architecture
+## 🏗️ Architecture
 
 61 source files, ~11.5k lines, largest file 683 lines. Rendering, physics,
 gameplay, input, camera, audio, UI and data are separate layers wired together
@@ -168,7 +200,7 @@ under the stick, and a shallow-depth-of-field pass on landing. Audio is fully
 synthesised (impact voices per surface, filtered by impact speed, plus a light room
 ambience) so there are no asset files to ship.
 
-## Settings, accessibility, performance
+## ♿ Settings, accessibility, performance
 
 The settings menu (saved locally) covers interface language, master/SFX/ambience
 volume, graphics quality, camera and throw sensitivity, invert-Y, haptics, the
@@ -222,7 +254,7 @@ tag). A telemetry panel shows phase, FPS, frame time, resolution scale, draw cal
 time scale, position, speed, spin, tilt, mass and COM offset. The logger that feeds
 it is silenced in production builds.
 
-## Tests
+## ✅ Tests
 
 ```
 tests/
@@ -246,7 +278,7 @@ simulation rather than a model of it: mass and centre of mass per variant, colli
 shape, determinism, no tunnelling, settle behaviour, contact events, raycasts, the
 landing-window sweep and the difficulty gradient.
 
-## Easter eggs
+## 🥚 Easter eggs
 
 Eight secrets are hidden in the game — a Konami code, a magic word, a low-gravity
 mode, two unlockable pieces of hidden content (a golden stick, a velvet surface), a
@@ -258,7 +290,7 @@ its effect and whether it persists. The triggers live in
 `src/gameplay/EasterEggSystem.ts`, which is pure and fully unit-tested
 (`tests/easterEggs.test.ts`), so the secrets cannot silently stop working.
 
-## Notes and limitations
+## 📝 Notes and limitations
 
 - Verification is layered. `tsc --noEmit`, the unit/integration suite (real Rapier
   physics plus a real jsdom DOM in `tests/hudDom.test.ts`), and `vite build`.
@@ -275,6 +307,21 @@ its effect and whether it persists. The triggers live in
 - The Rapier bundle is ~2.2 MB (830 KB gzipped) because the WASM payload is
   inlined; it is split into its own chunk and loaded once at boot.
 
-## License
+## ⚖️ License & the GitHub basics
 
-MIT
+| | |
+| --- | --- |
+|  [**LICENSE**](LICENSE) | Free and open-source under the **MIT License** — use it, learn from it, fork it. |
+|  [**Terms of Use**](TERMS.md) | *Conditions d'utilisation* — the short human version, in English & French. |
+| 🤝 [**Contributing**](CONTRIBUTING.md) | How to set up, what we look for, and what we won't merge. |
+| 🕊️ [**Code of Conduct**](CODE_OF_CONDUCT.md) | Be kind; assume good intent. |
+
+No accounts, no servers, no tracking — your progress never leaves your browser.
+
+---
+
+<div align="center">
+
+*Made with 🧪 real physics and an unreasonable number of failed landings.*
+
+</div>
