@@ -14,7 +14,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "smoke": "vitest run --config vitest.smoke.config.ts",
-    "verify": "node scripts/verify-render.mjs"
+    "verify": "node scripts/verify-render.mjs",
+    "deploy:pages": "vite build && rm -rf docs/assets && cp -r dist/assets docs/assets && rm -f docs/assets/*.map && cp -f dist/index.html docs/index.html && echo 'docs/ pr\u00eat : committe et pousse pour publier'"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.19.2",
